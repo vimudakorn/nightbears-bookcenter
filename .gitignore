@@ -1,0 +1,36 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Output of go build
+/build/
+/bin/
+/dist/
+
+# Vendor dependencies (ถ้าใช้ go mod vendor แล้วไม่อยาก push)
+vendor/
+
+# Go workspace file (Go 1.18+)
+go.work
+go.work.sum
+
+# IDE / Editor
+.idea/
+.vscode/
+*.swp
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Env and config
+.env
+.env.*
