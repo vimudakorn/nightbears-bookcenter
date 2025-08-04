@@ -12,6 +12,10 @@ type UserGormRepo struct {
 	db *gorm.DB
 }
 
+func NewUserGormRepo(db *gorm.DB) domain.UserRepository {
+	return &UserGormRepo{db: db}
+}
+
 func (u *UserGormRepo) FindByKey(key string, value string) (*domain.User, error) {
 	user := domain.User{}
 
@@ -31,10 +35,6 @@ func (u *UserGormRepo) FindByKey(key string, value string) (*domain.User, error)
 	return &user, nil
 }
 
-func NewUserGormRepo(db *gorm.DB) domain.UserRepository {
-	return &UserGormRepo{db: db}
-}
-
 func (u *UserGormRepo) Create(user *domain.User) error {
 	return u.db.Create(user).Error
 }
@@ -52,7 +52,7 @@ func (u *UserGormRepo) FindAll() ([]domain.User, error) {
 func (u *UserGormRepo) FindByID(id uint) (*domain.User, error) {
 	user := domain.User{}
 	// err := u.db.Preload("Cart").Preload("Order").Preload("Book").First(&user, id).Error
-	err := u.db.First(&user, id).Error
+	err := u.db.Preload("Profile").First(&user, id).Error
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +98,9 @@ func (u *UserGormRepo) GetPagination(page int, limit int, search string, sortBy 
 
 	query.Count(&count)
 
-	err := query.Order(order).Limit(limit).Offset(offset).Find(&users).Error
+	err := query.Preload("Profile").
+		Preload("Cart").
+		Preload("Orders").Order(order).Limit(limit).Offset(offset).Find(&users).Error
 	return users, count, err
 }
 
@@ -115,9 +117,17 @@ func (r *UserGormRepo) UpdateProfile(userID uint, req request.UserProfileDataReq
 		updates["phone"] = req.Phone
 	}
 
-	return r.db.Model(&domain.User{}).Where("id = ?", userID).Updates(updates).Error
+	return r.db.Model(&domain.Profile{}).Where("user_id = ?", userID).Updates(updates).Error
 }
 
 func (u *UserGormRepo) UpdatePassword(user *domain.User) error {
 	return u.db.Model(user).Update("password", user.Password).Error
+}
+
+func (r *UserGormRepo) CreateProfile(profile *domain.Profile) error {
+	return r.db.Create(profile).Error
+}
+
+func (r *UserGormRepo) Transaction(fc func(tx *gorm.DB) error) error {
+	return r.db.Transaction(fc)
 }

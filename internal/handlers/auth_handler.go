@@ -19,21 +19,49 @@ func NewAuthHandler(uc *usecases.AuthUsecase) *AuthHandler {
 	return &AuthHandler{usecases: uc}
 }
 
+// func (h *AuthHandler) Register(c *fiber.Ctx) error {
+// 	var req request.RegisterRequest
+// 	if err := c.BodyParser(&req); err != nil {
+// 		return c.Status(400).JSON(fiber.Map{"error": "invalid request"})
+// 	}
+
+// 	if err := utils.ValidateStruct(c, &req); err != nil {
+// 		return err
+// 	}
+
+// 	if err := h.usecases.Register(&req); err != nil {
+// 		return c.Status(400).JSON(fiber.Map{"error": err.Error()})
+// 	}
+// 	return c.JSON(fiber.Map{"message": "registered"})
+
+// }
+
 func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	var req request.RegisterRequest
 	if err := c.BodyParser(&req); err != nil {
-		return c.Status(400).JSON(fiber.Map{"error": "invalid request"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid request format",
+		})
 	}
 
-	if err := utils.ValidateStruct(c, &req); err != nil {
-		return err
+	warnings, err := h.usecases.Register(&req)
+
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": err.Error(),
+		})
 	}
 
-	if err := h.usecases.Register(&req); err != nil {
-		return c.Status(400).JSON(fiber.Map{"error": err.Error()})
+	if len(warnings) > 0 {
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"message":  "User created with warnings",
+			"warnings": warnings,
+		})
 	}
-	return c.JSON(fiber.Map{"message": "registered"})
 
+	return c.JSON(fiber.Map{
+		"message": "User created successfully",
+	})
 }
 
 func (h *AuthHandler) Login(c *fiber.Ctx) error {

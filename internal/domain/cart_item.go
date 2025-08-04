@@ -4,9 +4,8 @@ import "gorm.io/gorm"
 
 type CartItem struct {
 	gorm.Model
-	CartID   uint
-	Cart     Cart `json:"-"` // Add Cart relation, hide from JSON
-	BookID   uint
-	Book     Book // Add Book relation
-	Quantity uint
+	CartID    uint `gorm:"not null"`
+	ProductID *uint
+	GroupID   *uint
+	Quantity  int `gorm:"default:1;not null"`
 }

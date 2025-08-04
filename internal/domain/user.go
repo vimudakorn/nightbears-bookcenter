@@ -7,17 +7,18 @@ import (
 
 type User struct {
 	gorm.Model
-	Name     string
-	Email    string
-	Password string
-	Role     string
-	Phone    string
+	Email    string `gorm:"not null;unique"`
+	Password string `gorm:"not null"`
+	Role     string `gorm:"not null"`
+	Profile  *Profile
 	Cart     Cart    `gorm:"foreignKey:UserID"`
 	Orders   []Order `gorm:"foreignKey:UserID"`
 }
 
 type UserRepository interface {
+	Transaction(fc func(tx *gorm.DB) error) error
 	Create(user *User) error
+	CreateProfile(Profile *Profile) error
 	FindAll() ([]User, error)
 	FindByName(name string) (*User, error)
 	FindByKey(key string, value string) (*User, error)

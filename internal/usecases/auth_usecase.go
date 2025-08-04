@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/vimudakorn/internal/domain"
+	"gorm.io/gorm"
 
 	"github.com/vimudakorn/internal/request"
 	"github.com/vimudakorn/internal/utils"
@@ -17,20 +18,48 @@ func NewAuthUsecase(r domain.UserRepository) *AuthUsecase {
 	return &AuthUsecase{repo: r}
 }
 
-func (u *AuthUsecase) Register(body *request.RegisterRequest) error {
-	// existingUser, err := u.repo.FindByKey("email", body.Email)
-	// if err == nil && existingUser != nil {
-	// 	return fmt.Errorf("This email already exists")
-	// }
-	if err := u.IsEmailExist(body.Email); err != nil {
-		return err
+func (u *AuthUsecase) Register(req *request.RegisterRequest) ([]utils.Warning, error) {
+	warnings := utils.ValidateRegisterForm(req)
+
+	if err := u.IsEmailExist(req.Email); err != nil {
+		return nil, fmt.Errorf("Email already exists")
 	}
-	if body.Password != body.ConfirmPassword {
-		return fmt.Errorf("passwords do not match")
+
+	if len(warnings) > 0 {
+		return warnings, nil
 	}
-	hashedPassword := utils.HashPassword(body.Password)
-	user := &domain.User{Name: body.Name, Email: body.Email, Password: hashedPassword, Role: body.Role, Phone: body.Phone}
-	return u.repo.Create(user)
+
+	hashedPassword := utils.HashPassword(req.Password)
+
+	err := u.repo.Transaction(func(tx *gorm.DB) error {
+		user := &domain.User{
+			Email:    req.Email,
+			Password: hashedPassword,
+			Role:     req.Role,
+		}
+		if err := tx.Create(user).Error; err != nil {
+			return err
+		}
+
+		profile := &domain.Profile{
+			UserID:    user.ID,
+			Name:      req.Name,
+			Phone:     req.Phone,
+			Address:   req.Address,
+			AvatarURL: req.AvatarURL,
+		}
+		if err := tx.Create(profile).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
 }
 
 func (u *AuthUsecase) IsEmailExist(email string) error {

@@ -7,6 +7,8 @@ type RegisterRequest struct {
 	ConfirmPassword string `json:"confirm_password" validate:"required"`
 	Role            string `json:"role" validate:"required,oneof=admin user"`
 	Phone           string `json:"phone" validate:"required,len=10"`
+	Address         string `json:"address"`
+	AvatarURL       string `json:"avatar_url"`
 }
 
 type LoginRequest struct {

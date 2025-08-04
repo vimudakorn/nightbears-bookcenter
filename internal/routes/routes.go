@@ -9,6 +9,7 @@ import (
 func SetupRoutes(app *fiber.App,
 	authHandler *handlers.AuthHandler,
 	userHandler *handlers.UserHandler,
+	productHandler *handlers.ProductHandler,
 ) {
 	// Public routes
 	app.Post("/login", authHandler.Login)
@@ -31,4 +32,7 @@ func SetupRoutes(app *fiber.App,
 	api.Get("/users", userHandler.GetAll)
 	api.Put("/users/change-profile", userHandler.ChangeProfileData)
 	api.Put("/users/change-password", authHandler.ChangePassword)
+
+	api.Get("/products", productHandler.GetAll)
+	api.Post("/products", productHandler.AddNewProduct)
 }

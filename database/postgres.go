@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/vimudakorn/configs"
-	"github.com/vimudakorn/internal/domain"
+	"github.com/vimudakorn/models"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -32,7 +32,8 @@ func ConnectDB() *gorm.DB {
 }
 
 func Migrate(db *gorm.DB) {
-	if err := db.AutoMigrate(&domain.User{}, &domain.Book{}, &domain.Category{}, &domain.BookCategory{}, &domain.Cart{}, &domain.CartItem{}, &domain.Order{}, &domain.OrderItem{}); err != nil {
+	if err := db.AutoMigrate(&models.User{}, &models.Profile{}, &models.Cart{}, &models.Category{}, &models.Product{}, &models.Book{}, &models.LearningSupply{}, &models.OfficeSupply{}, &models.Order{}, &models.OrderItem{}, &models.CartItem{}, &models.BookCategory{}, &models.BookImage{}, &models.Group{}, &models.GroupProduct{}); err != nil {
+		// if err := db.AutoMigrate(&domain.User{}, &domain.Book{}, &domain.Category{}, &domain.BookCategory{}, &domain.Cart{}, &domain.CartItem{}, &domain.Order{}, &domain.OrderItem{}, &domain.BookImage{}); err != nil {
 		log.Fatalf("Migration failed: %v", err)
 	}
 }

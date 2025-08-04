@@ -31,22 +31,25 @@ func (h *UserHandler) GetAll(c *fiber.Ctx) error {
 		page = 1
 	}
 
+	if limit < 1 {
+		limit = 10
+	}
+
 	users, count, err := h.usecases.GetPagination(page, limit, name, sortBy, sortOrder)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
 	switch userRole {
 	case constants.ADMIN:
-		var res []responses.AdmidUserdataResponse
+		var res []responses.AdminUserdataResponse
 		for _, user := range users {
-			res = append(res, responses.AdmidUserdataResponse{
-				ID:       user.ID,
-				Name:     user.Name,
-				Email:    user.Email,
-				Password: user.Password,
-				Role:     user.Role,
-				Cart:     &user.Cart,
-				Orders:   user.Orders,
+			res = append(res, responses.AdminUserdataResponse{
+				ID:     user.ID,
+				Name:   user.Profile.Name,
+				Email:  user.Email,
+				Role:   user.Role,
+				Cart:   &user.Cart,
+				Orders: user.Orders,
 			})
 		}
 		return c.JSON(fiber.Map{
@@ -61,7 +64,7 @@ func (h *UserHandler) GetAll(c *fiber.Ctx) error {
 		for _, user := range users {
 			res = append(res, responses.UserUserdataResponse{
 				ID:   user.ID,
-				Name: user.Name})
+				Name: user.Profile.Name})
 		}
 		return c.JSON(fiber.Map{
 			"data":       res,
@@ -92,12 +95,12 @@ func (h *UserHandler) ChangeProfileData(c *fiber.Ctx) error {
 	}
 
 	hasChange := false
-	if req.Name != "" && req.Name != user.Name {
-		user.Name = req.Name
+	if req.Name != "" && req.Name != user.Profile.Name {
+		user.Profile.Name = req.Name
 		hasChange = true
 	}
-	if req.Phone != "" && req.Phone != user.Phone {
-		user.Phone = req.Phone
+	if req.Phone != "" && req.Phone != user.Profile.Phone {
+		user.Profile.Phone = req.Phone
 		hasChange = true
 	}
 
@@ -107,7 +110,6 @@ func (h *UserHandler) ChangeProfileData(c *fiber.Ctx) error {
 		})
 	}
 
-	// ทำการ update
 	if err := h.usecases.UpdateUserProfile(userID, req); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to update user",
@@ -115,5 +117,4 @@ func (h *UserHandler) ChangeProfileData(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(fiber.Map{"message": "Profile updated successfully"})
-
 }

@@ -2,10 +2,9 @@ package domain
 
 import "gorm.io/gorm"
 
-type Book struct {
+type OfficeSupply struct {
 	gorm.Model
 	ProductID uint `gorm:"uniqueIndex"` // One-to-one
-	Author    string
-	ISBN      string
-	Discount  float64
+	Color     string
+	Size      string
 }
