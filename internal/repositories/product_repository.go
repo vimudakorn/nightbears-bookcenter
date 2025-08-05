@@ -103,7 +103,7 @@ func (b *ProductGormRepo) GetPagination(page int, limit int, search string, sort
 
 	query.Count(&count)
 
-	err := query.Preload("Categories").Order(order).Limit(limit).Offset(offset).Find(&products).Error
+	err := query.Order(order).Limit(limit).Offset(offset).Find(&products).Error
 	return products, count, err
 }
 

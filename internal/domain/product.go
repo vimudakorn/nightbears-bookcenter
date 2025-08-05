@@ -36,9 +36,9 @@ type Product struct {
 	LearningSupply   *LearningSupply
 	OfficeSupplyID   *uint
 	OfficeSupply     *OfficeSupply
-	CategoryID       uint           `gorm:"not null"` // FK to Category
+	CategoryID       *uint          `gorm:"not null"` // FK to Category
 	Category         Category       // The associated Category object
-	BookImages       []ProductImage `gorm:"foreignKey:ProductID"`
+	ProductImages    []ProductImage `gorm:"foreignKey:ProductID"`
 }
 
 type ProductRepository interface {

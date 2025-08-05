@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/vimudakorn/configs"
-	"github.com/vimudakorn/models"
+	"github.com/vimudakorn/internal/domain"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -32,8 +32,20 @@ func ConnectDB() *gorm.DB {
 }
 
 func Migrate(db *gorm.DB) {
-	if err := db.AutoMigrate(&models.User{}, &models.Profile{}, &models.Cart{}, &models.Category{}, &models.Product{}, &models.Book{}, &models.LearningSupply{}, &models.OfficeSupply{}, &models.Order{}, &models.OrderItem{}, &models.CartItem{}, &models.BookCategory{}, &models.BookImage{}, &models.Group{}, &models.GroupProduct{}); err != nil {
-		// if err := db.AutoMigrate(&domain.User{}, &domain.Book{}, &domain.Category{}, &domain.BookCategory{}, &domain.Cart{}, &domain.CartItem{}, &domain.Order{}, &domain.OrderItem{}, &domain.BookImage{}); err != nil {
+	// db.Migrator().DropTable(&domain.User{}, &domain.Profile{}, &domain.Cart{}, &domain.Category{}, &domain.Product{}, &domain.Book{}, &domain.LearningSupply{}, &domain.OfficeSupply{}, &domain.Order{}, &domain.OrderItem{}, &domain.CartItem{}, &domain.ProductCategory{}, &domain.ProductImage{}, &domain.Group{}, &domain.GroupProduct{})
+
+	// if err := db.AutoMigrate(&models.User{}, &models.Profile{}, &models.Cart{}, &models.Category{}, &models.Product{}, &models.Book{}, &models.LearningSupply{}, &models.OfficeSupply{}, &models.Order{}, &models.OrderItem{}, &models.CartItem{}, &models.BookCategory{}, &models.BookImage{}, &models.Group{}, &models.GroupProduct{}); err != nil {
+	if err := db.AutoMigrate(&domain.User{}, &domain.Profile{}, &domain.Cart{}, &domain.Category{}, &domain.Product{}, &domain.Book{}, &domain.LearningSupply{}, &domain.OfficeSupply{}, &domain.Order{}, &domain.OrderItem{}, &domain.CartItem{}, &domain.ProductCategory{}, &domain.ProductImage{}, &domain.Group{}, &domain.GroupProduct{}); err != nil {
 		log.Fatalf("Migration failed: %v", err)
 	}
+
+	// mockRepo := repositories.NewMockRepository(db)
+	// insertUseCase := usecases.NewInsertMultipleUseCase(mockRepo, db)
+
+	// if err := insertUseCase.Execute(); err != nil {
+	// 	log.Fatalf("Insert data failed: %v", err)
+	// } else {
+	// 	log.Println("Insert data success!")
+	// }
+
 }

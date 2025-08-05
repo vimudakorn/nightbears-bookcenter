@@ -48,8 +48,8 @@ func (h *ProductHandler) GetAll(c *fiber.Ctx) error {
 			Price:        product.Price,
 			Stock:        product.Stock,
 			ImageURL:     product.ImageURL,
-			CategoryID:   product.CategoryID,
-			ProductImage: product.BookImages,
+			CategoryID:   *product.CategoryID,
+			ProductImage: product.ProductImages,
 		})
 	}
 	return c.JSON(fiber.Map{
@@ -72,15 +72,15 @@ func (h *ProductHandler) AddNewProduct(c *fiber.Ctx) error {
 		}
 
 		product := &domain.Product{
-			ProductCode: req.ProductCode,
-			ProductType: req.ProductType,
-			Name:        req.Name,
-			Description: req.Description,
-			Price:       req.Price,
-			Stock:       req.Stock,
-			ImageURL:    req.ImageURL,
-			CategoryID:  req.CategoryID,
-			BookImages:  req.ProductImage,
+			ProductCode:   req.ProductCode,
+			ProductType:   req.ProductType,
+			Name:          req.Name,
+			Description:   req.Description,
+			Price:         req.Price,
+			Stock:         req.Stock,
+			ImageURL:      req.ImageURL,
+			CategoryID:    req.CategoryID,
+			ProductImages: req.ProductImage,
 		}
 
 		if err := h.usecases.AddNewProduct(product); err != nil {
@@ -96,6 +96,10 @@ func (h *ProductHandler) AddNewProduct(c *fiber.Ctx) error {
 		if err := h.usecases.CreateBook(book); err != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, "failed to create book")
 		}
+		product.LearningSupplyID = &book.ID
+		if err := h.usecases.Update(product); err != nil {
+			return fiber.NewError(fiber.StatusInternalServerError, "failed to update book id in product")
+		}
 	case "learning":
 		var req productrequest.AddNewLearningRequest
 		if err := c.BodyParser(&req); err != nil {
@@ -103,15 +107,15 @@ func (h *ProductHandler) AddNewProduct(c *fiber.Ctx) error {
 		}
 
 		product := &domain.Product{
-			ProductCode: req.ProductCode,
-			ProductType: req.ProductType,
-			Name:        req.Name,
-			Description: req.Description,
-			Price:       req.Price,
-			Stock:       req.Stock,
-			ImageURL:    req.ImageURL,
-			CategoryID:  req.CategoryID,
-			BookImages:  req.ProductImage,
+			ProductCode:   req.ProductCode,
+			ProductType:   req.ProductType,
+			Name:          req.Name,
+			Description:   req.Description,
+			Price:         req.Price,
+			Stock:         req.Stock,
+			ImageURL:      req.ImageURL,
+			CategoryID:    req.CategoryID,
+			ProductImages: req.ProductImage,
 		}
 
 		if err := h.usecases.AddNewProduct(product); err != nil {
@@ -127,6 +131,10 @@ func (h *ProductHandler) AddNewProduct(c *fiber.Ctx) error {
 		if err := h.usecases.CreateLearning(learning); err != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, "failed to create learning supply")
 		}
+		product.LearningSupplyID = &learning.ID
+		if err := h.usecases.Update(product); err != nil {
+			return fiber.NewError(fiber.StatusInternalServerError, "failed to update learning supply id in product")
+		}
 	case "office":
 		var req productrequest.AddNewOfficeRequest
 		if err := c.BodyParser(&req); err != nil {
@@ -134,15 +142,15 @@ func (h *ProductHandler) AddNewProduct(c *fiber.Ctx) error {
 		}
 
 		product := &domain.Product{
-			ProductCode: req.ProductCode,
-			ProductType: req.ProductType,
-			Name:        req.Name,
-			Description: req.Description,
-			Price:       req.Price,
-			Stock:       req.Stock,
-			ImageURL:    req.ImageURL,
-			CategoryID:  req.CategoryID,
-			BookImages:  req.ProductImage,
+			ProductCode:   req.ProductCode,
+			ProductType:   req.ProductType,
+			Name:          req.Name,
+			Description:   req.Description,
+			Price:         req.Price,
+			Stock:         req.Stock,
+			ImageURL:      req.ImageURL,
+			CategoryID:    req.CategoryID,
+			ProductImages: req.ProductImage,
 		}
 
 		if err := h.usecases.AddNewProduct(product); err != nil {
@@ -157,6 +165,10 @@ func (h *ProductHandler) AddNewProduct(c *fiber.Ctx) error {
 
 		if err := h.usecases.CreateOffice(office); err != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, "failed to create office supply")
+		}
+		product.LearningSupplyID = &office.ID
+		if err := h.usecases.Update(product); err != nil {
+			return fiber.NewError(fiber.StatusInternalServerError, "failed to update office supply id in product")
 		}
 	default:
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid product type"})

@@ -12,7 +12,7 @@ type AddNewBookRequest struct {
 	Price        float64               `json:"price"`
 	Stock        int                   `json:"stock"`
 	ImageURL     string                `json:"image_url"`
-	CategoryID   uint                  `json:"category_id"`
+	CategoryID   *uint                 `json:"category_id"`
 	ProductImage []domain.ProductImage `json:"product_image"`
 	Author       string                `json:"author"`
 	ISBN         string                `json:"isbn"`
@@ -26,7 +26,7 @@ type AddNewLearningRequest struct {
 	Price        float64               `json:"price"`
 	Stock        int                   `json:"stock"`
 	ImageURL     string                `json:"image_url"`
-	CategoryID   uint                  `json:"category_id"`
+	CategoryID   *uint                 `json:"category_id"`
 	ProductImage []domain.ProductImage `json:"product_image"`
 	Brand        string                `json:"brand"`
 	Material     string                `json:"material"`
@@ -40,7 +40,7 @@ type AddNewOfficeRequest struct {
 	Price        float64               `json:"price"`
 	Stock        int                   `json:"stock"`
 	ImageURL     string                `json:"image_url"`
-	CategoryID   uint                  `json:"category_id"`
+	CategoryID   *uint                 `json:"category_id"`
 	ProductImage []domain.ProductImage `json:"product_image"`
 	Color        string                `json:"color"`
 	Size         string                `json:"size"`
