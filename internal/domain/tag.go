@@ -7,3 +7,7 @@ type Tag struct {
 	Name     string    `gorm:"not null"`
 	Products []Product `gorm:"many2many:product_tags"` // reverse relation
 }
+
+type TagRepository interface {
+	GetTagsByIDs(ids []uint) ([]Tag, error)
+}

@@ -24,8 +24,12 @@ func main() {
 	userUsecase := usecases.NewUserUsecase(userRepo)
 	userHandler := handlers.NewUserHandler(userUsecase)
 
+	tagRepo := repositories.NewTagGormRepo(db)
+	tagUsecase := usecases.NewTagUsecase(tagRepo)
+	tagHandler := handlers.NewTagHandler(tagUsecase)
+
 	productRepo := repositories.NewProductGormDB(db)
-	productUsecase := usecases.NewProductUsecase(productRepo)
+	productUsecase := usecases.NewProductUsecase(productRepo, tagRepo)
 	productHandler := handlers.NewProductHandler(productUsecase)
 
 	categoryRepo := repositories.NewCategoryGormRepo(db)
@@ -36,6 +40,6 @@ func main() {
 	// mockUsecase.AddNewData()
 
 	app := fiber.New()
-	routes.SetupRoutes(app, authHandler, userHandler, productHandler, categoryHandler)
+	routes.SetupRoutes(app, authHandler, userHandler, productHandler, categoryHandler, tagHandler)
 	app.Listen(":8080")
 }

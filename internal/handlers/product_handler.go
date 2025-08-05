@@ -72,6 +72,15 @@ func (h *ProductHandler) AddNewProduct(c *fiber.Ctx) error {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})
 		}
 
+		var tags []domain.Tag
+		if len(req.TagIDs) > 0 {
+			var err error
+			tags, err = h.usecases.GetTagsByIDs(req.TagIDs)
+			if err != nil {
+				return fiber.NewError(fiber.StatusInternalServerError, "failed to fetch tags")
+			}
+		}
+
 		product := &domain.Product{
 			ProductCode:   req.ProductCode,
 			ProductType:   req.ProductType,
@@ -82,6 +91,7 @@ func (h *ProductHandler) AddNewProduct(c *fiber.Ctx) error {
 			ImageURL:      req.ImageURL,
 			CategoryID:    req.CategoryID,
 			ProductImages: req.ProductImage,
+			Tags:          tags,
 		}
 
 		if err := h.usecases.AddNewProduct(product); err != nil {
@@ -103,6 +113,15 @@ func (h *ProductHandler) AddNewProduct(c *fiber.Ctx) error {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})
 		}
 
+		var tags []domain.Tag
+		if len(req.TagIDs) > 0 {
+			var err error
+			tags, err = h.usecases.GetTagsByIDs(req.TagIDs)
+			if err != nil {
+				return fiber.NewError(fiber.StatusInternalServerError, "failed to fetch tags")
+			}
+		}
+
 		product := &domain.Product{
 			ProductCode:   req.ProductCode,
 			ProductType:   req.ProductType,
@@ -113,6 +132,7 @@ func (h *ProductHandler) AddNewProduct(c *fiber.Ctx) error {
 			ImageURL:      req.ImageURL,
 			CategoryID:    req.CategoryID,
 			ProductImages: req.ProductImage,
+			Tags:          tags,
 		}
 
 		if err := h.usecases.AddNewProduct(product); err != nil {
@@ -134,6 +154,15 @@ func (h *ProductHandler) AddNewProduct(c *fiber.Ctx) error {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})
 		}
 
+		var tags []domain.Tag
+		if len(req.TagIDs) > 0 {
+			var err error
+			tags, err = h.usecases.GetTagsByIDs(req.TagIDs)
+			if err != nil {
+				return fiber.NewError(fiber.StatusInternalServerError, "failed to fetch tags")
+			}
+		}
+
 		product := &domain.Product{
 			ProductCode:   req.ProductCode,
 			ProductType:   req.ProductType,
@@ -144,6 +173,7 @@ func (h *ProductHandler) AddNewProduct(c *fiber.Ctx) error {
 			ImageURL:      req.ImageURL,
 			CategoryID:    req.CategoryID,
 			ProductImages: req.ProductImage,
+			Tags:          tags,
 		}
 
 		if err := h.usecases.AddNewProduct(product); err != nil {

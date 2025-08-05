@@ -11,6 +11,7 @@ func SetupRoutes(app *fiber.App,
 	userHandler *handlers.UserHandler,
 	productHandler *handlers.ProductHandler,
 	categoryHandler *handlers.CategoryHandler,
+	tagHandler *handlers.TagHandler,
 ) {
 	// Public routes
 	app.Post("/login", authHandler.Login)
