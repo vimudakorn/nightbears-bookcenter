@@ -50,6 +50,7 @@ func (h *ProductHandler) GetAll(c *fiber.Ctx) error {
 			ImageURL:     product.ImageURL,
 			CategoryID:   *product.CategoryID,
 			ProductImage: product.ProductImages,
+			TagIDs:       product.Tags,
 		})
 	}
 	return c.JSON(fiber.Map{
@@ -96,10 +97,6 @@ func (h *ProductHandler) AddNewProduct(c *fiber.Ctx) error {
 		if err := h.usecases.CreateBook(book); err != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, "failed to create book")
 		}
-		product.LearningSupplyID = &book.ID
-		if err := h.usecases.Update(product); err != nil {
-			return fiber.NewError(fiber.StatusInternalServerError, "failed to update book id in product")
-		}
 	case "learning":
 		var req productrequest.AddNewLearningRequest
 		if err := c.BodyParser(&req); err != nil {
@@ -131,10 +128,6 @@ func (h *ProductHandler) AddNewProduct(c *fiber.Ctx) error {
 		if err := h.usecases.CreateLearning(learning); err != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, "failed to create learning supply")
 		}
-		product.LearningSupplyID = &learning.ID
-		if err := h.usecases.Update(product); err != nil {
-			return fiber.NewError(fiber.StatusInternalServerError, "failed to update learning supply id in product")
-		}
 	case "office":
 		var req productrequest.AddNewOfficeRequest
 		if err := c.BodyParser(&req); err != nil {
@@ -165,10 +158,6 @@ func (h *ProductHandler) AddNewProduct(c *fiber.Ctx) error {
 
 		if err := h.usecases.CreateOffice(office); err != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, "failed to create office supply")
-		}
-		product.LearningSupplyID = &office.ID
-		if err := h.usecases.Update(product); err != nil {
-			return fiber.NewError(fiber.StatusInternalServerError, "failed to update office supply id in product")
 		}
 	default:
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid product type"})
@@ -227,25 +216,35 @@ func (h *ProductHandler) Delete(c *fiber.Ctx) error {
 
 	switch product.ProductType {
 	case "book":
-		if product.BookID != nil {
-			err := h.usecases.DeleteBook(*product.BookID)
-			if err != nil {
-				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to delete book info"})
-			}
+		bookID, err := h.usecases.FindBookID(product.ID)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to find book"})
 		}
+
+		err = h.usecases.DeleteBook(bookID)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to delete book info"})
+		}
+
 	case "learning":
-		if product.LearningSupplyID != nil {
-			err := h.usecases.DeleteLearning(*product.LearningSupplyID)
-			if err != nil {
-				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to delete learning supply info"})
-			}
+		learningID, err := h.usecases.FindLearningID(product.ID)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to find learning supply"})
+		}
+
+		err = h.usecases.DeleteLearning(learningID)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to delete learning supply info"})
 		}
 	case "office":
-		if product.OfficeSupplyID != nil {
-			err := h.usecases.DeleteOffice(*product.OfficeSupplyID)
-			if err != nil {
-				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to delete office supply info"})
-			}
+		officeID, err := h.usecases.FindOfficeID(product.ID)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to find office supply"})
+		}
+
+		err = h.usecases.DeleteOffice(officeID)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to delete office supply info"})
 		}
 	}
 

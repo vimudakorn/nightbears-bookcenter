@@ -111,3 +111,21 @@ func (b *ProductGormRepo) GetPagination(page int, limit int, search string, sort
 func (b *ProductGormRepo) Update(product *domain.Product) error {
 	return b.db.Save(product).Error
 }
+
+func (b *ProductGormRepo) FindBookID(productID uint) (uint, error) {
+	var book domain.Book
+	err := b.db.Where("product_id = ?", productID).First(&book).Error
+	return book.ID, err
+}
+
+func (b *ProductGormRepo) FindLearningID(productID uint) (uint, error) {
+	var learning domain.LearningSupply
+	err := b.db.Where("product_id = ?", productID).First(&learning).Error
+	return learning.ID, err
+}
+
+func (b *ProductGormRepo) FindOfficeID(productID uint) (uint, error) {
+	var office domain.OfficeSupply
+	err := b.db.Where("product_id = ?", productID).First(&office).Error
+	return office.ID, err
+}

@@ -53,3 +53,14 @@ func (r *ProductUsecase) DeleteOffice(officeId uint) error {
 func (r *ProductUsecase) DeleteLearning(learningId uint) error {
 	return r.repo.DeleteLearning(learningId)
 }
+
+func (r *ProductUsecase) FindBookID(productID uint) (uint, error) {
+	return r.repo.FindBookID(productID)
+}
+
+func (r *ProductUsecase) FindLearningID(productID uint) (uint, error) {
+	return r.repo.FindLearningID(productID)
+}
+func (r *ProductUsecase) FindOfficeID(productID uint) (uint, error) {
+	return r.repo.FindOfficeID(productID)
+}

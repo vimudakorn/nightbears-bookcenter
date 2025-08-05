@@ -9,6 +9,7 @@ import "gorm.io/gorm"
 // 	Name             string `gorm:"not null"`
 // 	Description      string
 // 	Price            float64 `gorm:"type:numeric(10,2);not null"`
+// 	Discount         float64 `gorm:"type:numeric(10,2);default:0"`
 // 	Stock            int     `gorm:"default:0"`
 // 	ImageURL         string
 // 	BookID           *uint
@@ -17,30 +18,31 @@ import "gorm.io/gorm"
 // 	LearningSupply   *LearningSupply
 // 	OfficeSupplyID   *uint
 // 	OfficeSupply     *OfficeSupply
-// 	Categories       []Category     `gorm:"many2many:book_categories;"`
-// 	BookImages       []ProductImage `gorm:"foreignKey:ProductID"` // ✅ บอกว่า BookImage ใช้ ProductID เป็น FK()
+// 	CategoryID       *uint          `gorm:"not null"` // FK to Category
+// 	Category         Category       // The associated Category object
+// 	ProductImages    []ProductImage `gorm:"foreignKey:ProductID"`
+// 	Tags             []Tag          `gorm:"many2many:product_tags"` // many-to-many relation with Tag
 // }
 
 type Product struct {
 	gorm.Model
-	ProductCode      int    `gorm:"unique;not null"`
-	ProductType      string `gorm:"not null"`
-	Name             string `gorm:"not null"`
-	Description      string
-	Price            float64 `gorm:"type:numeric(10,2);not null"`
-	Discount         float64 `gorm:"type:numeric(10,2);default:0"`
-	Stock            int     `gorm:"default:0"`
-	ImageURL         string
-	BookID           *uint
-	Book             *Book
-	LearningSupplyID *uint
-	LearningSupply   *LearningSupply
-	OfficeSupplyID   *uint
-	OfficeSupply     *OfficeSupply
-	CategoryID       *uint          `gorm:"not null"` // FK to Category
-	Category         Category       // The associated Category object
-	ProductImages    []ProductImage `gorm:"foreignKey:ProductID"`
-	Tags             []Tag          `gorm:"many2many:product_tags"` // many-to-many relation with Tag
+	ProductCode   int    `gorm:"unique;not null"`
+	ProductType   string `gorm:"not null"`
+	Name          string `gorm:"not null"`
+	Description   string
+	Price         float64 `gorm:"type:numeric(10,2);not null"`
+	Discount      float64 `gorm:"type:numeric(10,2);default:0"`
+	Stock         int     `gorm:"default:0"`
+	ImageURL      string
+	CategoryID    *uint `gorm:"not null"`
+	Category      Category
+	ProductImages []ProductImage `gorm:"foreignKey:ProductID"`
+	Tags          []Tag          `gorm:"many2many:product_tags"`
+
+	// ความสัมพันธ์ one-to-one (ไม่ต้องมี ID field ฝั่งนี้)
+	Book           *Book           `gorm:"foreignKey:ProductID"`
+	LearningSupply *LearningSupply `gorm:"foreignKey:ProductID"`
+	OfficeSupply   *OfficeSupply   `gorm:"foreignKey:ProductID"`
 }
 
 type ProductRepository interface {
@@ -56,4 +58,7 @@ type ProductRepository interface {
 	DeleteBook(bookID uint) error
 	DeleteLearning(learningID uint) error
 	DeleteOffice(officeID uint) error
+	FindBookID(productID uint) (uint, error)
+	FindLearningID(productID uint) (uint, error)
+	FindOfficeID(productID uint) (uint, error)
 }

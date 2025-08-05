@@ -14,6 +14,7 @@ type AddNewBookRequest struct {
 	ImageURL     string                `json:"image_url"`
 	CategoryID   *uint                 `json:"category_id"`
 	ProductImage []domain.ProductImage `json:"product_image"`
+	TagIDs       []uint                `json:"tag_ids,omitempty"`
 	Author       string                `json:"author"`
 	ISBN         string                `json:"isbn"`
 }
@@ -28,6 +29,7 @@ type AddNewLearningRequest struct {
 	ImageURL     string                `json:"image_url"`
 	CategoryID   *uint                 `json:"category_id"`
 	ProductImage []domain.ProductImage `json:"product_image"`
+	TagIDs       []uint                `json:"tag_ids,omitempty"`
 	Brand        string                `json:"brand"`
 	Material     string                `json:"material"`
 }
@@ -42,6 +44,7 @@ type AddNewOfficeRequest struct {
 	ImageURL     string                `json:"image_url"`
 	CategoryID   *uint                 `json:"category_id"`
 	ProductImage []domain.ProductImage `json:"product_image"`
+	TagIDs       []uint                `json:"tag_ids,omitempty"`
 	Color        string                `json:"color"`
 	Size         string                `json:"size"`
 }

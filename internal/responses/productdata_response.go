@@ -13,4 +13,5 @@ type ProductdataResponse struct {
 	ImageURL     string                `json:"image_url"`
 	CategoryID   uint                  `json:"category_id"`
 	ProductImage []domain.ProductImage `json:"product_image"`
+	TagIDs       []domain.Tag          `json:"tag_ids"`
 }
