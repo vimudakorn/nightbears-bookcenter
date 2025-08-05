@@ -45,7 +45,6 @@ func NewProductGormDB(db *gorm.DB) domain.ProductRepository {
 	return &ProductGormRepo{db: db}
 }
 
-// Create implements domain.ProductRepository.
 func (b *ProductGormRepo) CreateProduct(Product *domain.Product) error {
 	return b.db.Create(Product).Error
 }
@@ -58,14 +57,24 @@ func (b *ProductGormRepo) Delete(id uint) error {
 // FindAll implements domain.ProductRepository.
 func (b *ProductGormRepo) FindAll() ([]domain.Product, error) {
 	Products := []domain.Product{}
-	err := b.db.Find(&Products).Error
+	err := b.db.
+		Preload("Category").
+		Preload("Tags").
+		Preload("Book").
+		Preload("LearningSupply").
+		Preload("OfficeSupply").Find(&Products).Error
 	return Products, err
 }
 
 // FindByID implements domain.ProductRepository.
 func (b *ProductGormRepo) FindByID(id uint) (*domain.Product, error) {
 	Product := domain.Product{}
-	err := b.db.First(&Product, id).Error
+	err := b.db.
+		Preload("Category").
+		Preload("Tags").
+		Preload("Book").
+		Preload("LearningSupply").
+		Preload("OfficeSupply").First(&Product, id).Error
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +112,12 @@ func (b *ProductGormRepo) GetPagination(page int, limit int, search string, sort
 
 	query.Count(&count)
 
-	err := query.Order(order).Limit(limit).Offset(offset).Find(&products).Error
+	err := query.
+		Preload("Category").
+		Preload("Tags").
+		Preload("Book").
+		Preload("LearningSupply").
+		Preload("OfficeSupply").Order(order).Limit(limit).Offset(offset).Find(&products).Error
 	return products, count, err
 }
 

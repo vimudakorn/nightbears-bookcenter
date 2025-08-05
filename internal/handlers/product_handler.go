@@ -54,6 +54,7 @@ func (h *ProductHandler) GetAll(c *fiber.Ctx) error {
 		})
 	}
 	return c.JSON(fiber.Map{
+		"full":       products,
 		"data":       res,
 		"page":       page,
 		"limit":      limit,
@@ -212,9 +213,19 @@ func (h *ProductHandler) UpdateProduct(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "product not found"})
 	}
 
+	var tags []domain.Tag
+	if len(req.TagIDs) > 0 {
+		var err error
+		tags, err = h.usecases.GetTagsByIDs(req.TagIDs)
+		if err != nil {
+			return fiber.NewError(fiber.StatusInternalServerError, "failed to fetch tags")
+		}
+	}
+
 	product.Name = req.Name
 	product.Price = req.Price
 	product.Stock = req.Stock
+	product.Tags = tags
 
 	if err := h.usecases.Update(product); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to update product"})
