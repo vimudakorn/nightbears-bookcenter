@@ -8,7 +8,7 @@ import "gorm.io/gorm"
 // 	ProductType      string `gorm:"not null"`
 // 	Name             string `gorm:"not null"`
 // 	Description      string
-// 	Price            float64 `gorm:"type:decimal(10,2);not null"`
+// 	Price            float64 `gorm:"type:numeric(10,2);not null"`
 // 	Stock            int     `gorm:"default:0"`
 // 	ImageURL         string
 // 	BookID           *uint
@@ -27,7 +27,8 @@ type Product struct {
 	ProductType      string `gorm:"not null"`
 	Name             string `gorm:"not null"`
 	Description      string
-	Price            float64 `gorm:"type:decimal(10,2);not null"`
+	Price            float64 `gorm:"type:numeric(10,2);not null"`
+	Discount         float64 `gorm:"type:numeric(10,2);default:0"`
 	Stock            int     `gorm:"default:0"`
 	ImageURL         string
 	BookID           *uint
@@ -39,6 +40,7 @@ type Product struct {
 	CategoryID       *uint          `gorm:"not null"` // FK to Category
 	Category         Category       // The associated Category object
 	ProductImages    []ProductImage `gorm:"foreignKey:ProductID"`
+	Tags             []Tag          `gorm:"many2many:product_tags"` // many-to-many relation with Tag
 }
 
 type ProductRepository interface {

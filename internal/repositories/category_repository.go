@@ -30,11 +30,20 @@ func (c *CategoryGormRepo) Create(category *domain.Category) error {
 }
 
 func (c *CategoryGormRepo) Delete(id uint) error {
-	result := c.db.Delete(&domain.Category{}, id)
-	if result.RowsAffected == 0 {
-		return errors.New("Category not found")
-	}
-	return result.Error
+	return c.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(&domain.Category{}).
+			Where("parent_id = ?", id).
+			Update("parent_id", nil).Error; err != nil {
+			return err
+		}
+
+		result := tx.Delete(&domain.Category{}, id)
+		if result.RowsAffected == 0 {
+			return errors.New("category not found")
+		}
+
+		return result.Error
+	})
 }
 
 func (c *CategoryGormRepo) FindAll() ([]domain.Category, error) {
@@ -96,4 +105,22 @@ func (c *CategoryGormRepo) FindChildrenRecursive(parentID uint, collected *[]dom
 	}
 
 	return nil
+}
+
+func (r *CategoryGormRepo) HasChildren(id uint) (bool, error) {
+	var count int64
+	err := r.db.Model(&domain.Category{}).Where("parent_id = ?", id).Count(&count).Error
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
+func (r *CategoryGormRepo) HasProducts(categoryID uint) (bool, error) {
+	var count int64
+	err := r.db.Model(&domain.Product{}).Where("category_id = ?", categoryID).Count(&count).Error
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
 }

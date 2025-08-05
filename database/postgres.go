@@ -35,7 +35,7 @@ func Migrate(db *gorm.DB) {
 	// db.Migrator().DropTable(&domain.User{}, &domain.Profile{}, &domain.Cart{}, &domain.Category{}, &domain.Product{}, &domain.Book{}, &domain.LearningSupply{}, &domain.OfficeSupply{}, &domain.Order{}, &domain.OrderItem{}, &domain.CartItem{}, &domain.ProductCategory{}, &domain.ProductImage{}, &domain.Group{}, &domain.GroupProduct{})
 
 	// if err := db.AutoMigrate(&models.User{}, &models.Profile{}, &models.Cart{}, &models.Category{}, &models.Product{}, &models.Book{}, &models.LearningSupply{}, &models.OfficeSupply{}, &models.Order{}, &models.OrderItem{}, &models.CartItem{}, &models.BookCategory{}, &models.BookImage{}, &models.Group{}, &models.GroupProduct{}); err != nil {
-	if err := db.AutoMigrate(&domain.User{}, &domain.Profile{}, &domain.Cart{}, &domain.Category{}, &domain.Product{}, &domain.Book{}, &domain.LearningSupply{}, &domain.OfficeSupply{}, &domain.Order{}, &domain.OrderItem{}, &domain.CartItem{}, &domain.ProductCategory{}, &domain.ProductImage{}, &domain.Group{}, &domain.GroupProduct{}); err != nil {
+	if err := db.AutoMigrate(&domain.User{}, &domain.Profile{}, &domain.Cart{}, &domain.Category{}, &domain.Product{}, &domain.Book{}, &domain.LearningSupply{}, &domain.OfficeSupply{}, &domain.Order{}, &domain.OrderItem{}, &domain.CartItem{}, &domain.ProductCategory{}, &domain.ProductImage{}, &domain.Group{}, &domain.GroupProduct{}, &domain.Tag{}); err != nil {
 		log.Fatalf("Migration failed: %v", err)
 	}
 

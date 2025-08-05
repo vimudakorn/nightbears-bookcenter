@@ -68,7 +68,7 @@ type Product struct {
 	ProductType      string `gorm:"not null"`
 	Name             string `gorm:"not null"`
 	Description      string
-	Price            float64 `gorm:"type:decimal(10,2);not null"`
+	Price            float64 `gorm:"type:numeric(10,2);not null"`
 	Stock            int     `gorm:"default:0"`
 	ImageURL         string
 	CreatedAt        time.Time
@@ -109,7 +109,7 @@ type OfficeSupply struct {
 type Order struct {
 	ID        uint    `gorm:"primaryKey"`
 	UserID    uint    `gorm:"not null"`
-	Total     float64 `gorm:"type:decimal(10,2);not null"`
+	Total     float64 `gorm:"type:numeric(10,2);not null"`
 	Status    string  `gorm:"default:pending;not null"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -123,7 +123,7 @@ type OrderItem struct {
 	ProductID       *uint
 	GroupID         *uint
 	Quantity        int     `gorm:"default:1;not null"`
-	PriceAtPurchase float64 `gorm:"type:decimal(10,2);not null"`
+	PriceAtPurchase float64 `gorm:"type:numeric(10,2);not null"`
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 	DeletedAt       gorm.DeletedAt `gorm:"index"`

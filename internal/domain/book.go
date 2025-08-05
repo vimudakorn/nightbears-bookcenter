@@ -7,5 +7,4 @@ type Book struct {
 	ProductID uint `gorm:"uniqueIndex"` // One-to-one
 	Author    string
 	ISBN      string
-	Discount  float64
 }

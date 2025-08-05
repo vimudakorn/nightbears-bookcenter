@@ -8,5 +8,5 @@ type OrderItem struct {
 	ProductID       *uint
 	GroupID         *uint
 	Quantity        int     `gorm:"default:1;not null"`
-	PriceAtPurchase float64 `gorm:"type:decimal(10,2);not null"`
+	PriceAtPurchase float64 `gorm:"type:numeric(10,2);not null"`
 }

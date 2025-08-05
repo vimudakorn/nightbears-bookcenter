@@ -22,4 +22,6 @@ type CategoryRepository interface {
 	IsIDExists(id *uint) (bool, error)
 	FindAllDescendants(id uint) ([]Category, error)
 	FindChildrenRecursive(parentID uint, collected *[]Category) error
+	HasChildren(id uint) (bool, error)
+	HasProducts(categoryID uint) (bool, error)
 }

@@ -297,15 +297,15 @@ func (uc *InsertMultipleUseCase) Execute() error {
 		}
 
 		// 5. Insert Books พร้อมเชื่อม ProductID
-		books := []domain.Book{
-			{Author: "พรพิไล", ISBN: "ISBN-001", Discount: 0, ProductID: productsBooks[0].ID},
-			{Author: "พรพิไล", ISBN: "ISBN-002", Discount: 10, ProductID: productsBooks[1].ID},
-			{Author: "พรพิไล", ISBN: "ISBN-003", Discount: 15, ProductID: productsBooks[2].ID},
-			{Author: "พรพิไล", ISBN: "ISBN-004", Discount: 20, ProductID: productsBooks[3].ID},
-		}
-		if err := tx.Create(&books).Error; err != nil {
-			return err
-		}
+		// books := []domain.Book{
+		// 	{Author: "พรพิไล", ISBN: "ISBN-001", Discount: 0, ProductID: productsBooks[0].ID},
+		// 	{Author: "พรพิไล", ISBN: "ISBN-002", Discount: 10, ProductID: productsBooks[1].ID},
+		// 	{Author: "พรพิไล", ISBN: "ISBN-003", Discount: 15, ProductID: productsBooks[2].ID},
+		// 	{Author: "พรพิไล", ISBN: "ISBN-004", Discount: 20, ProductID: productsBooks[3].ID},
+		// }
+		// if err := tx.Create(&books).Error; err != nil {
+		// 	return err
+		// }
 
 		return nil
 	})

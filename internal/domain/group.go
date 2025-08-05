@@ -7,5 +7,6 @@ type Group struct {
 	Name        string `gorm:"not null"`
 	EduLevel    string `gorm:"not null"`
 	Description string
+	SalePrice   float64
 	Products    []GroupProduct
 }
