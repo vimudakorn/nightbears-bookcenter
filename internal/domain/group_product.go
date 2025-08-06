@@ -8,3 +8,7 @@ type GroupProduct struct {
 	ProductID uint `gorm:"not null"`
 	Quantity  int  `gorm:"not null"`
 }
+
+type GroupProductRepository interface {
+	Create(groupProduct *GroupProduct) error
+}
