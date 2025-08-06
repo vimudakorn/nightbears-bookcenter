@@ -83,3 +83,11 @@ func (g *GroupGormRepo) FindByID(id uint) (*domain.Group, error) {
 	err := g.db.Preload("Products").First(&group, id).Error
 	return &group, err
 }
+
+func (r *GroupGormRepo) CreateWithProduct(tx *gorm.DB, group *domain.Group) error {
+	return tx.Create(group).Error
+}
+
+func (r *GroupGormRepo) GetDB() *gorm.DB {
+	return r.db
+}

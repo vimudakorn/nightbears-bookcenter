@@ -4,40 +4,42 @@ import (
 	"github.com/vimudakorn/internal/domain"
 	errorsres "github.com/vimudakorn/internal/domain/errors_res"
 	grouprequest "github.com/vimudakorn/internal/request/group_request"
+	"gorm.io/gorm"
 )
 
 type GroupUsecase struct {
-	repo domain.GroupRepository
+	groupRepo        domain.GroupRepository
+	productGroupRepo domain.GroupProductRepository
 }
 
-func NewGroupUsecase(r domain.GroupRepository) *GroupUsecase {
-	return &GroupUsecase{repo: r}
+func NewGroupUsecase(groupRepo domain.GroupRepository) *GroupUsecase {
+	return &GroupUsecase{groupRepo: groupRepo}
 }
 
 func (r *GroupUsecase) GetPagination(page int, limit int, search string, sortBy string, orderBy string) ([]domain.Group, int64, error) {
-	return r.repo.GetPagination(page, limit, search, sortBy, orderBy)
+	return r.groupRepo.GetPagination(page, limit, search, sortBy, orderBy)
 }
 
 func (r *GroupUsecase) Create(group *domain.Group) error {
-	return r.repo.Create(group)
+	return r.groupRepo.Create(group)
 }
 
 func (r *GroupUsecase) IsNameAndEduExist(name string, level string) (bool, error) {
-	return r.repo.IsNameAndEduExist(name, level)
+	return r.groupRepo.IsNameAndEduExist(name, level)
 }
 
 func (r *GroupUsecase) FindByID(id uint) (*domain.Group, error) {
-	return r.repo.FindByID(id)
+	return r.groupRepo.FindByID(id)
 }
 
 func (g *GroupUsecase) UpdateGroup(id uint, req grouprequest.UpdateGroupRequest) error {
-	group, err := g.repo.FindByID(id)
+	group, err := g.groupRepo.FindByID(id)
 	if err != nil {
 		return errorsres.ErrGroupNameExist
 	}
 
 	if req.Name != "" && req.EduLevel != "" {
-		isExist, err := g.repo.IsNameAndEduExist(req.Name, req.EduLevel)
+		isExist, err := g.groupRepo.IsNameAndEduExist(req.Name, req.EduLevel)
 		if err != nil {
 			return err
 		}
@@ -57,9 +59,54 @@ func (g *GroupUsecase) UpdateGroup(id uint, req grouprequest.UpdateGroupRequest)
 	}
 	group.SalePrice = req.SalePrice
 
-	return g.repo.Update(group)
+	return g.groupRepo.Update(group)
 }
 
 func (g *GroupUsecase) Delete(id uint) error {
-	return g.repo.Delete(id)
+	return g.groupRepo.Delete(id)
+}
+
+func (g *GroupUsecase) CreateGroupWithProducts(req grouprequest.CreateGroupWithProductsRequest) error {
+	// เช็คชื่อกลุ่มซ้ำ
+	isExist, err := g.groupRepo.IsNameAndEduExist(req.Name, req.EduLevel)
+	if err != nil {
+		return err
+	}
+	if isExist {
+		return errorsres.ErrGroupNameExist
+	}
+
+	if req.SalePrice <= 0 {
+		return errorsres.ErrInvalidSalePrice
+	}
+
+	// ทำ Transaction
+	return g.groupRepo.GetDB().Transaction(func(tx *gorm.DB) error {
+		group := domain.Group{
+			Name:        req.Name,
+			EduLevel:    req.EduLevel,
+			Description: req.Description,
+			SalePrice:   req.SalePrice,
+		}
+
+		if err := g.groupRepo.CreateWithProduct(tx, &group); err != nil {
+			return err
+		}
+
+		for _, p := range req.Products {
+			if p.Quantity <= 0 {
+				continue // หรือ return error ก็ได้
+			}
+			pg := domain.GroupProduct{
+				GroupID:   group.ID,
+				ProductID: p.ProductID,
+				Quantity:  p.Quantity,
+			}
+			if err := g.productGroupRepo.CreateWithProduct(tx, &pg); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
 }

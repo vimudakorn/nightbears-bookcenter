@@ -18,4 +18,6 @@ type GroupRepository interface {
 	Delete(id uint) error
 	IsNameAndEduExist(name string, level string) (bool, error)
 	FindByID(id uint) (*Group, error)
+	CreateWithProduct(tx *gorm.DB, group *Group) error
+	GetDB() *gorm.DB
 }

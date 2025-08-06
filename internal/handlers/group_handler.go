@@ -121,3 +121,26 @@ func (h *GroupHandler) Delete(c *fiber.Ctx) error {
 		"message": "group deleted successfully",
 	})
 }
+
+func (h *GroupHandler) CreateGroupWithProducts(c *fiber.Ctx) error {
+	var req grouprequest.CreateGroupWithProductsRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
+	}
+
+	err := h.usecases.CreateGroupWithProducts(req)
+	if err != nil {
+		switch err {
+		case errorsres.ErrGroupNotFound:
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Group not found"})
+		case errorsres.ErrGroupNameExist:
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Group name with this education level already exists"})
+		case errorsres.ErrInvalidSalePrice:
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid sale price"})
+		default:
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal server error"})
+		}
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"message": "Group with product created successfully"})
+}
