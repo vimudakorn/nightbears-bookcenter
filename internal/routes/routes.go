@@ -12,6 +12,8 @@ func SetupRoutes(app *fiber.App,
 	productHandler *handlers.ProductHandler,
 	categoryHandler *handlers.CategoryHandler,
 	tagHandler *handlers.TagHandler,
+	groupHandler *handlers.GroupHandler,
+	groupProductHandler *handlers.GroupProductHandler,
 ) {
 	// Public routes
 	app.Post("/login", authHandler.Login)
@@ -49,4 +51,10 @@ func SetupRoutes(app *fiber.App,
 	api.Post("/tags", tagHandler.AddNewTag)
 	api.Put("/tags/:id/rename", tagHandler.RenameTag)
 	api.Delete("/tags/:id", tagHandler.Delete)
+
+	api.Get("/groups", groupHandler.GetAll)
+	api.Post("/groups/add-product", groupHandler.CreateGroupWithProducts)
+	api.Post("/groups", groupHandler.AddNewGroup)
+	api.Put("/groups/:id", groupHandler.Update)
+	api.Delete("/groups/:id", groupHandler.Delete)
 }

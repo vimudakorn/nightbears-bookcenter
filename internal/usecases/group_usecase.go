@@ -9,11 +9,11 @@ import (
 
 type GroupUsecase struct {
 	groupRepo        domain.GroupRepository
-	productGroupRepo domain.GroupProductRepository
+	groupProductRepo domain.GroupProductRepository
 }
 
-func NewGroupUsecase(groupRepo domain.GroupRepository) *GroupUsecase {
-	return &GroupUsecase{groupRepo: groupRepo}
+func NewGroupUsecase(groupRepo domain.GroupRepository, groupProductRepo domain.GroupProductRepository) *GroupUsecase {
+	return &GroupUsecase{groupRepo: groupRepo, groupProductRepo: groupProductRepo}
 }
 
 func (r *GroupUsecase) GetPagination(page int, limit int, search string, sortBy string, orderBy string) ([]domain.Group, int64, error) {
@@ -102,7 +102,7 @@ func (g *GroupUsecase) CreateGroupWithProducts(req grouprequest.CreateGroupWithP
 				ProductID: p.ProductID,
 				Quantity:  p.Quantity,
 			}
-			if err := g.productGroupRepo.CreateWithProduct(tx, &pg); err != nil {
+			if err := g.groupProductRepo.CreateWithProduct(tx, &pg); err != nil {
 				return err
 			}
 		}

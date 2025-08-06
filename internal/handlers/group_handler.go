@@ -18,7 +18,7 @@ func NewGroupHandler(uc *usecases.GroupUsecase) *GroupHandler {
 	return &GroupHandler{usecases: uc}
 }
 
-func (h *GroupHandler) GetPagination(c *fiber.Ctx) error {
+func (h *GroupHandler) GetAll(c *fiber.Ctx) error {
 	name := c.Query("name")
 	page, _ := strconv.Atoi(c.Query("page", "1"))
 	limit, _ := strconv.Atoi(c.Query("limit", "10"))
