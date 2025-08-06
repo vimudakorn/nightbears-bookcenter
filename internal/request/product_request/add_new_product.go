@@ -9,7 +9,7 @@ type AddNewBookRequest struct {
 	ProductType  string                `json:"product_type"`
 	Name         string                `json:"name"`
 	Description  string                `json:"description"`
-	Price        float64               `json:"price"`
+	Price        float64               `json:"price" validate:"gt=0, required"`
 	Stock        int                   `json:"stock"`
 	ImageURL     string                `json:"image_url"`
 	CategoryID   *uint                 `json:"category_id"`

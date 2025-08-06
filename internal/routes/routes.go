@@ -44,4 +44,9 @@ func SetupRoutes(app *fiber.App,
 	api.Post("/category", categoryHandler.CreateCategory)
 	api.Put("/category/:id", categoryHandler.Update)
 	api.Delete("/category/:id", categoryHandler.Delete)
+
+	api.Get("/tags", tagHandler.GetAll)
+	api.Post("/tags", tagHandler.AddNewTag)
+	api.Put("/tags/:id/rename", tagHandler.RenameTag)
+	api.Delete("/tags/:id", tagHandler.Delete)
 }
