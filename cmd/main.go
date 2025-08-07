@@ -29,7 +29,7 @@ func main() {
 	tagUsecase := usecases.NewTagUsecase(tagRepo)
 	productUsecase := usecases.NewProductUsecase(productRepo, tagRepo)
 	categoryUsecase := usecases.NewCategoryUsecase(categoryRepo)
-	groupProductUsecase := usecases.NewGroupProductUsecase(groupProductRepo, groupRepo)
+	groupProductUsecase := usecases.NewGroupProductUsecase(groupProductRepo, groupRepo, productRepo)
 	groupUsecase := usecases.NewGroupUsecase(groupRepo, groupProductRepo)
 
 	authHandler := handlers.NewAuthHandler(authUsecase)

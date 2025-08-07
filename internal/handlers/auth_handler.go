@@ -77,7 +77,8 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	}
 
 	// Create tokens
-	accessToken, _ := utils.GenerateToken(user.ID, user.Role, utils.AccessSecret, 15*time.Minute)
+	// accessToken, _ := utils.GenerateToken(user.ID, user.Role, utils.AccessSecret, 15*time.Minute)
+	accessToken, _ := utils.GenerateToken(user.ID, user.Role, utils.AccessSecret, 24*time.Hour)
 	refreshToken, _ := utils.GenerateToken(user.ID, user.Role, utils.RefreshSecret, 7*24*time.Hour)
 
 	// Set refresh token in cookie

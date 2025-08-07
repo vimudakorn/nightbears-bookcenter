@@ -61,4 +61,5 @@ type ProductRepository interface {
 	FindBookID(productID uint) (uint, error)
 	FindLearningID(productID uint) (uint, error)
 	FindOfficeID(productID uint) (uint, error)
+	IsProductIDExists(productID uint) (bool, error)
 }

@@ -11,6 +11,14 @@ type ProductGormRepo struct {
 	db *gorm.DB
 }
 
+// IsProductIDExists implements domain.ProductRepository.
+func (b *ProductGormRepo) IsProductIDExists(productID uint) (bool, error) {
+	var count int64
+	err := b.db.Model(&domain.Product{}).Where("id = ?", productID).Count(&count).Error
+	return count > 0, err
+
+}
+
 // DeleteBook implements domain.ProductRepository.
 func (b *ProductGormRepo) DeleteBook(bookID uint) error {
 	return b.db.Delete(&domain.Book{}, bookID).Error
