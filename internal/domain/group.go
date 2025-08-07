@@ -20,4 +20,5 @@ type GroupRepository interface {
 	FindByID(id uint) (*Group, error)
 	CreateWithProduct(tx *gorm.DB, group *Group) error
 	GetDB() *gorm.DB
+	IsGroupIDExists(groupID uint) (bool, error)
 }

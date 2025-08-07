@@ -11,6 +11,6 @@ type GroupProduct struct {
 
 type GroupProductRepository interface {
 	Create(groupProduct *GroupProduct) error
-	GetProductByID(groupID uint) ([]GroupProduct, error)
+	GetProductByGroupID(groupID uint) ([]GroupProduct, error)
 	CreateWithProduct(tx *gorm.DB, pg *GroupProduct) error
 }

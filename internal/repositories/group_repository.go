@@ -11,6 +11,13 @@ type GroupGormRepo struct {
 	db *gorm.DB
 }
 
+// IsGroupIDExists implements domain.GroupRepository.
+func (g *GroupGormRepo) IsGroupIDExists(groupID uint) (bool, error) {
+	var count int64
+	err := g.db.Model(&domain.Group{}).Where("id = ?", groupID).Count(&count).Error
+	return count > 0, err
+}
+
 func NewGroupGormRepo(db *gorm.DB) domain.GroupRepository {
 	return &GroupGormRepo{db: db}
 }
