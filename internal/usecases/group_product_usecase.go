@@ -1,6 +1,8 @@
 package usecases
 
 import (
+	"fmt"
+
 	"github.com/vimudakorn/internal/domain"
 	groupproductrequest "github.com/vimudakorn/internal/request/group_product_request"
 )
@@ -67,4 +69,27 @@ func (gp *GroupProductUsecase) FindByGroupAndProductID(groupID uint, productID u
 
 func (gp *GroupProductUsecase) GetProductByGroupID(groupID uint) ([]groupproductrequest.GroupProductWithDetail, error) {
 	return gp.groupProductRepo.GetProductByGroupID(groupID)
+}
+
+func (gp *GroupProductUsecase) AddOrUpdateProductsInGroup(groupID uint, products []domain.GroupProduct) error {
+	exists, err := gp.groupRepo.IsGroupIDExists(groupID)
+	if err != nil {
+		return fmt.Errorf("failed to check group: %w", err)
+	}
+	if !exists {
+		return fmt.Errorf("group ID %d not found", groupID)
+	}
+
+	for _, p := range products {
+		ok, err := gp.productRepo.IsProductIDExists(p.ProductID)
+		if err != nil {
+			return fmt.Errorf("failed to check product ID %d: %w", p.ProductID, err)
+		}
+		if !ok {
+			return fmt.Errorf("product ID %d not found", p.ProductID)
+		}
+	}
+
+	// ส่งเข้า repo ที่จัดการ transaction เอง
+	return gp.groupProductRepo.AddOrUpdateMulti(groupID, products)
 }

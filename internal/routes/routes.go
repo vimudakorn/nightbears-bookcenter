@@ -60,4 +60,5 @@ func SetupRoutes(app *fiber.App,
 
 	api.Get("/groups/:id", groupProductHandler.GetByID)
 	api.Post("/groups/:id/add-product", groupProductHandler.AddMultiProductInGroup)
+	api.Post("/groups/:id/add-product-tx", groupProductHandler.AddMultiProductInGroupWithTx)
 }

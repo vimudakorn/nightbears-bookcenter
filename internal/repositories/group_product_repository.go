@@ -100,3 +100,30 @@ func (g *GroupProductGormRepo) GetProductByGroupID(groupID uint) ([]groupproduct
 func (r *GroupProductGormRepo) CreateWithProduct(tx *gorm.DB, pg *domain.GroupProduct) error {
 	return tx.Create(pg).Error
 }
+
+func (g *GroupProductGormRepo) AddOrUpdateMulti(groupID uint, products []domain.GroupProduct) error {
+	return g.db.Transaction(func(tx *gorm.DB) error {
+		for _, p := range products {
+			var existing domain.GroupProduct
+			err := tx.Where("group_id = ? AND product_id = ?", groupID, p.ProductID).First(&existing).Error
+
+			if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+				return err
+			}
+
+			if existing.ID != 0 {
+				// update quantity
+				existing.Quantity += p.Quantity
+				if err := tx.Save(&existing).Error; err != nil {
+					return err
+				}
+			} else {
+				// create new
+				if err := tx.Create(&p).Error; err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	})
+}

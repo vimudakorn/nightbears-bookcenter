@@ -89,77 +89,6 @@ func (h *GroupProductHandler) AddProductInGroup(c *fiber.Ctx) error {
 	})
 }
 
-// func (h *GroupProductHandler) AddMultiProductInGroup(c *fiber.Ctx) error {
-// 	groupID, err := strconv.Atoi(c.Params("id"))
-// 	if err != nil {
-// 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})
-// 	}
-// 	isIDExist, err := h.usecases.IsGroupIDExists(uint(groupID))
-// 	if err != nil {
-// 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to check group id"})
-// 	}
-// 	if !isIDExist {
-// 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Group ID not found"})
-// 	}
-// 	var req groupproductrequest.AddMultipleProductInGroupRequest
-// 	if err := c.BodyParser(&req); err != nil {
-// 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
-// 	}
-
-// 	var products []domain.GroupProduct
-
-// 	for _, product := range req.Products {
-// 		if product.Quantity < 1 {
-// 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-// 				"error": "Quantity must be at least 1",
-// 			})
-// 		}
-
-// 		isExist, err := h.usecases.IsProductInGroupID(uint(groupID), product.ProductID)
-// 		if err != nil {
-// 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-// 				"error": "Failed to check product in group",
-// 			})
-// 		}
-// 		if isExist {
-// 			groupProductExist, err := h.usecases.FindByGroupAndProductID(uint(groupID), product.ProductID)
-// 			if err != nil {
-// 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-// 					"error": "Failed to check product by group id and product id",
-// 				})
-// 			}
-// 			groupProduct := domain.GroupProduct{
-// 				GroupID:   uint(groupID),
-// 				ProductID: product.ProductID,
-// 				Quantity:  groupProductExist.Quantity + product.Quantity,
-// 			}
-
-// 			err = h.usecases.UpdateProductInGroup(&groupProduct)
-// 		} else {
-// 			groupProduct := domain.GroupProduct{
-// 				GroupID:   uint(groupID),
-// 				ProductID: product.ProductID,
-// 				Quantity:  product.Quantity,
-// 			}
-// 			err = h.usecases.CreateProductInGroup(&groupProduct)
-// 		}
-
-// 		products = append(products, groupProduct)
-// 	}
-// 	group, err := h.usecases.AddMultiProductInGroup(products)
-// 	if err != nil {
-// 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-// 			"error": "Failed to add products to group",
-// 		})
-// 	}
-
-// 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-// 		"data":    group,
-// 		"message": "Products added to group successfully",
-// 	})
-
-// }
-
 func (h *GroupProductHandler) AddMultiProductInGroup(c *fiber.Ctx) error {
 	groupID, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
@@ -232,6 +161,48 @@ func (h *GroupProductHandler) AddMultiProductInGroup(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to find group by ID",
 		})
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"data":    group,
+		"message": "Products added or updated in group successfully",
+	})
+}
+
+func (h *GroupProductHandler) AddMultiProductInGroupWithTx(c *fiber.Ctx) error {
+	groupID, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid group ID"})
+	}
+
+	var req groupproductrequest.AddMultipleProductInGroupRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
+	}
+
+	// แปลงเป็น []domain.GroupProduct
+	var groupProducts []domain.GroupProduct
+	for _, p := range req.Products {
+		if p.Quantity < 1 {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Quantity must be at least 1"})
+		}
+
+		groupProducts = append(groupProducts, domain.GroupProduct{
+			GroupID:   uint(groupID),
+			ProductID: p.ProductID,
+			Quantity:  p.Quantity,
+		})
+	}
+
+	// Call usecase
+	err = h.usecases.AddOrUpdateProductsInGroup(uint(groupID), groupProducts)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	group, err := h.usecases.FindByID(uint(groupID))
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to find group by ID"})
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{

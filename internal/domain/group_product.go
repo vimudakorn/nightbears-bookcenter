@@ -21,4 +21,5 @@ type GroupProductRepository interface {
 	IsProductInGroupID(groupID uint, productID uint) (bool, error)
 	Update(product *GroupProduct) error
 	FindByGroupAndProductID(groupID uint, productID uint) (*GroupProduct, error)
+	AddOrUpdateMulti(groupID uint, products []GroupProduct) error
 }
