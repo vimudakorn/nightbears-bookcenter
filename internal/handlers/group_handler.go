@@ -114,6 +114,7 @@ func (h *GroupHandler) Delete(c *fiber.Ctx) error {
 	}
 
 	// ถ้ามีคนเอา group นี้ไปใช้ใน cart , order เราต้องจัดการยังไง ลบในตะกร้าไปด้วยใช่มั้ย
+	// ต้องมาลบใน group_products table ด้วย
 	if err := h.usecases.Delete(uint(groupID)); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to delete group info"})
 	}

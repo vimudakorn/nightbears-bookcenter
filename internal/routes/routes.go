@@ -32,6 +32,8 @@ func SetupRoutes(app *fiber.App,
 			"role":    role,
 		})
 	})
+	// Put: All Fields
+	// Patch: Some Fields
 
 	api.Get("/users", userHandler.GetAll)
 	api.Put("/users/change-profile", userHandler.ChangeProfileData)
@@ -61,4 +63,6 @@ func SetupRoutes(app *fiber.App,
 	api.Get("/groups/:id", groupProductHandler.GetByID)
 	api.Post("/groups/:id/add-product", groupProductHandler.AddMultiProductInGroup)
 	api.Post("/groups/:id/add-product-tx", groupProductHandler.AddMultiProductInGroupWithTx)
+	api.Patch("/groups/:id", groupProductHandler.UpdateProductInGroupID)
+	api.Patch("/groups/:id/products/:productID", groupProductHandler.UpdateProductInGroup)
 }

@@ -93,3 +93,7 @@ func (gp *GroupProductUsecase) AddOrUpdateProductsInGroup(groupID uint, products
 	// ส่งเข้า repo ที่จัดการ transaction เอง
 	return gp.groupProductRepo.AddOrUpdateMulti(groupID, products)
 }
+
+func (uc *GroupProductUsecase) UpdateProductsInGroup(groupID uint, updates []domain.GroupProduct) error {
+	return uc.groupProductRepo.UpdateProductsInGroupID(groupID, updates)
+}

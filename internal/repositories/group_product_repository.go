@@ -12,6 +12,32 @@ type GroupProductGormRepo struct {
 	db *gorm.DB
 }
 
+// UpdateProductInGroupID implements domain.GroupProductRepository.
+func (g *GroupProductGormRepo) UpdateProductsInGroupID(groupID uint, products []domain.GroupProduct) error {
+	return g.db.Transaction(func(tx *gorm.DB) error {
+		for _, product := range products {
+			var existing domain.GroupProduct
+			err := tx.Where("group_id = ? AND product_id = ?", groupID, product.ProductID).
+				First(&existing).Error
+
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				// ข้ามหรือจะ return error ก็ได้
+				continue
+			}
+			if err != nil {
+				return err
+			}
+			existing.Quantity = product.Quantity
+
+			if err := tx.Save(&existing).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+
+	})
+}
+
 func (g *GroupProductGormRepo) FindByGroupAndProductID(groupID uint, productID uint) (*domain.GroupProduct, error) {
 	var groupProduct domain.GroupProduct
 	err := g.db.Where("group_id = ? AND product_id = ?", groupID, productID).First(&groupProduct).Error
