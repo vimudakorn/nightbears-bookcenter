@@ -65,4 +65,5 @@ func SetupRoutes(app *fiber.App,
 	api.Post("/groups/:id/add-product-tx", groupProductHandler.AddMultiProductInGroupWithTx)
 	api.Patch("/groups/:id", groupProductHandler.UpdateProductInGroupID)
 	api.Patch("/groups/:id/products/:productID", groupProductHandler.UpdateProductInGroup)
+	api.Delete("/groups/:id/products/:productID", groupProductHandler.DeleteProductInGroup)
 }

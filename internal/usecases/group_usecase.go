@@ -110,3 +110,7 @@ func (g *GroupUsecase) CreateGroupWithProducts(req grouprequest.CreateGroupWithP
 		return nil
 	})
 }
+
+func (g *GroupUsecase) IsGroupIDExists(groupID uint) (bool, error) {
+	return g.groupRepo.IsGroupIDExists(groupID)
+}

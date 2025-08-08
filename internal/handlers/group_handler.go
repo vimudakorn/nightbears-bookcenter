@@ -112,6 +112,13 @@ func (h *GroupHandler) Delete(c *fiber.Ctx) error {
 			"error": "Invalid group ID",
 		})
 	}
+	isExist, err := h.usecases.IsGroupIDExists(uint(groupID))
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to check group id"})
+	}
+	if !isExist {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Group ID not found"})
+	}
 
 	// ถ้ามีคนเอา group นี้ไปใช้ใน cart , order เราต้องจัดการยังไง ลบในตะกร้าไปด้วยใช่มั้ย
 	// ต้องมาลบใน group_products table ด้วย

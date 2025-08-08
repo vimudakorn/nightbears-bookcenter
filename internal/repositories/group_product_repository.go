@@ -12,6 +12,13 @@ type GroupProductGormRepo struct {
 	db *gorm.DB
 }
 
+// Delete implements domain.GroupProductRepository.
+func (g *GroupProductGormRepo) Delete(groupID uint, productID uint) error {
+	return g.db.
+		Where("group_id = ? AND product_id = ?", groupID, productID).
+		Delete(&domain.GroupProduct{}).Error
+}
+
 // UpdateProductInGroupID implements domain.GroupProductRepository.
 func (g *GroupProductGormRepo) UpdateProductsInGroupID(groupID uint, products []domain.GroupProduct) error {
 	return g.db.Transaction(func(tx *gorm.DB) error {
@@ -50,10 +57,12 @@ func (g *GroupProductGormRepo) FindByGroupAndProductID(groupID uint, productID u
 	return &groupProduct, nil
 }
 
-// HasProductInGroupID implements domain.GroupProductRepository.
+// IsProductInGroupID implements domain.GroupProductRepository.
 func (g *GroupProductGormRepo) IsProductInGroupID(groupID uint, productID uint) (bool, error) {
 	var count int64
-	err := g.db.Model(&domain.GroupProduct{}).Find("group_id = ? AND product_id = ?", groupID, productID).Count(&count).Error
+	err := g.db.Model(&domain.GroupProduct{}).
+		Where("group_id = ? AND product_id = ?", groupID, productID).
+		Count(&count).Error
 	return count > 0, err
 }
 
@@ -104,16 +113,16 @@ func (g *GroupProductGormRepo) GetProductByGroupID(groupID uint) ([]groupproduct
 
 	err := g.db.Table("group_products").
 		Select(`
-			group_products.group_id,
-			groups.name AS group_name,
-			group_products.product_id,
-			products.name AS product_name,
-			products.price,
-			group_products.quantity
-		`).
-		Joins("JOIN products ON products.id = group_products.product_id").
-		Joins("JOIN groups ON groups.id = group_products.group_id").
-		Where("group_products.group_id = ?", groupID).
+        group_products.group_id,
+        groups.name AS group_name,
+        group_products.product_id,
+        products.name AS product_name,
+        products.price,
+        group_products.quantity
+    `).
+		Joins("JOIN products ON products.id = group_products.product_id AND products.deleted_at IS NULL").
+		Joins("JOIN groups ON groups.id = group_products.group_id AND groups.deleted_at IS NULL").
+		Where("group_products.group_id = ? AND group_products.deleted_at IS NULL", groupID).
 		Scan(&result).Error
 
 	if err != nil {

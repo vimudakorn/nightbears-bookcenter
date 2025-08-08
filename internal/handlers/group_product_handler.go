@@ -278,6 +278,10 @@ func (h *GroupProductHandler) UpdateProductInGroup(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
 	}
 
+	if req.Quantity < 1 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Quantity must be at least 1"})
+	}
+
 	product := &domain.GroupProduct{
 		GroupID:   uint(groupID),
 		ProductID: uint(productID),
@@ -288,4 +292,40 @@ func (h *GroupProductHandler) UpdateProductInGroup(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Update failed"})
 	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Products in group updated"})
+}
+
+func (h *GroupProductHandler) DeleteProductInGroup(c *fiber.Ctx) error {
+	groupID, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid group ID"})
+	}
+
+	isGroupIDExist, err := h.usecases.IsGroupIDExists(uint(groupID))
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to check group ID"})
+	}
+	if !isGroupIDExist {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Group ID not found"})
+	}
+
+	productID, err := strconv.Atoi(c.Params("productID"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid product ID"})
+	}
+
+	isProductIDExist, err := h.usecases.IsProductInGroupID(uint(groupID), uint(productID))
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to check product ID in group"})
+	}
+	if !isProductIDExist {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Product ID in group not found"})
+	}
+
+	if err := h.usecases.DeleteProductInGroup(uint(groupID), uint(productID)); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to delete product from group"})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Product deleted from group successfully",
+	})
 }

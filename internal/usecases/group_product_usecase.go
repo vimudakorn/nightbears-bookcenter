@@ -94,6 +94,10 @@ func (gp *GroupProductUsecase) AddOrUpdateProductsInGroup(groupID uint, products
 	return gp.groupProductRepo.AddOrUpdateMulti(groupID, products)
 }
 
-func (uc *GroupProductUsecase) UpdateProductsInGroup(groupID uint, updates []domain.GroupProduct) error {
-	return uc.groupProductRepo.UpdateProductsInGroupID(groupID, updates)
+func (gp *GroupProductUsecase) UpdateProductsInGroup(groupID uint, updates []domain.GroupProduct) error {
+	return gp.groupProductRepo.UpdateProductsInGroupID(groupID, updates)
+}
+
+func (gp *GroupProductUsecase) DeleteProductInGroup(groupID uint, productID uint) error {
+	return gp.groupProductRepo.Delete(groupID, productID)
 }

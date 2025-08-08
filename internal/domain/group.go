@@ -8,7 +8,7 @@ type Group struct {
 	EduLevel    string `gorm:"not null"`
 	Description string
 	SalePrice   float64
-	Products    []GroupProduct
+	Products    []GroupProduct `gorm:"foreignKey:GroupID;constraint:OnDelete:CASCADE;"`
 }
 
 type GroupRepository interface {

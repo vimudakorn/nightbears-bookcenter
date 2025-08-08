@@ -62,10 +62,20 @@ func (g *GroupGormRepo) GetPagination(page int, limit int, search string, sortBy
 		query = query.Where("name ILIKE ?", "%"+search+"%")
 	}
 
+	// นับจำนวนทั้งหมดก่อน
 	query.Count(&count)
 
 	err := query.
-		Preload("Products").Order(order).Limit(limit).Offset(offset).Find(&groups).Error
+		Preload("Products", func(db *gorm.DB) *gorm.DB {
+			return db.
+				Joins("JOIN products ON products.id = group_products.product_id").
+				Where("products.deleted_at IS NULL")
+		}).
+		Order(order).
+		Limit(limit).
+		Offset(offset).
+		Find(&groups).Error
+
 	return groups, count, err
 }
 
