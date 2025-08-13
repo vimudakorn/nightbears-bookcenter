@@ -7,12 +7,13 @@ import (
 
 type User struct {
 	gorm.Model
-	Email    string `gorm:"not null;unique"`
-	Password string `gorm:"not null"`
-	Role     string `gorm:"not null"`
-	Profile  *Profile
-	Cart     Cart    `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;"`
-	Orders   []Order `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;"`
+	Email         string `gorm:"not null;unique"`
+	Password      string `gorm:"not null"`
+	Role          string `gorm:"not null"`
+	Profile       *Profile
+	Cart          Cart           `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;"`
+	Orders        []Order        `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;"`
+	UserEduLevels []UserEduLevel `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;"`
 }
 
 type UserRepository interface {
