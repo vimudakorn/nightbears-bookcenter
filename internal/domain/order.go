@@ -8,5 +8,5 @@ type Order struct {
 	User       User        `gorm:"foreignKey:UserID"`
 	TotalPrice float64     `gorm:"type:numeric(10,2);not null"`
 	Status     string      `gorm:"not null"`
-	Items      []OrderItem `gorm:"foreignKey:OrderID"`
+	Items      []OrderItem `gorm:"foreignKey:OrderID;constraint:OnDelete:CASCADE;"`
 }

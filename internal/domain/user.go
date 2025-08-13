@@ -11,8 +11,8 @@ type User struct {
 	Password string `gorm:"not null"`
 	Role     string `gorm:"not null"`
 	Profile  *Profile
-	Cart     Cart    `gorm:"foreignKey:UserID"`
-	Orders   []Order `gorm:"foreignKey:UserID"`
+	Cart     Cart    `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;"`
+	Orders   []Order `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;"`
 }
 
 type UserRepository interface {

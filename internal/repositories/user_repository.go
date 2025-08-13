@@ -94,6 +94,7 @@ func (u *UserGormRepo) GetPagination(page int, limit int, search string, sortBy 
 
 	if search != "" {
 		query = query.Where("name ILIKE ?", "%"+search+"%")
+		// query = query.Where("email ILIKE ?", "%"+search+"%")
 	}
 
 	query.Count(&count)

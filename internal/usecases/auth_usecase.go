@@ -11,27 +11,26 @@ import (
 )
 
 type AuthUsecase struct {
-	repo domain.UserRepository
+	userRepo domain.UserRepository
 }
 
-func NewAuthUsecase(r domain.UserRepository) *AuthUsecase {
-	return &AuthUsecase{repo: r}
+func NewAuthUsecase(uRepo domain.UserRepository) *AuthUsecase {
+	return &AuthUsecase{userRepo: uRepo}
 }
 
 func (u *AuthUsecase) Register(req *request.RegisterRequest) ([]utils.Warning, error) {
 	warnings := utils.ValidateRegisterForm(req)
+	if len(warnings) > 0 {
+		return warnings, nil
+	}
 
 	if err := u.IsEmailExist(req.Email); err != nil {
 		return nil, fmt.Errorf("Email already exists")
 	}
 
-	if len(warnings) > 0 {
-		return warnings, nil
-	}
-
 	hashedPassword := utils.HashPassword(req.Password)
 
-	err := u.repo.Transaction(func(tx *gorm.DB) error {
+	err := u.userRepo.Transaction(func(tx *gorm.DB) error {
 		user := &domain.User{
 			Email:    req.Email,
 			Password: hashedPassword,
@@ -52,6 +51,14 @@ func (u *AuthUsecase) Register(req *request.RegisterRequest) ([]utils.Warning, e
 			return err
 		}
 
+		cart := &domain.Cart{
+			UserID: user.ID,
+		}
+
+		if err := tx.Create(cart).Error; err != nil {
+			return err
+		}
+
 		return nil
 	})
 
@@ -63,7 +70,7 @@ func (u *AuthUsecase) Register(req *request.RegisterRequest) ([]utils.Warning, e
 }
 
 func (u *AuthUsecase) IsEmailExist(email string) error {
-	existingUser, err := u.repo.FindByKey("email", email)
+	existingUser, err := u.userRepo.FindByKey("email", email)
 	if err == nil && existingUser != nil {
 		return fmt.Errorf("This email already exists")
 	}
@@ -71,7 +78,7 @@ func (u *AuthUsecase) IsEmailExist(email string) error {
 }
 
 func (u *AuthUsecase) Login(email, password string) (*domain.User, error) {
-	user, err := u.repo.FindByKey("email", email)
+	user, err := u.userRepo.FindByKey("email", email)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +89,7 @@ func (u *AuthUsecase) Login(email, password string) (*domain.User, error) {
 }
 
 func (u *AuthUsecase) ChangePassword(userID uint, oldPassword, newPassword, confirmNewPassword string) error {
-	user, err := u.repo.FindByID(userID)
+	user, err := u.userRepo.FindByID(userID)
 	if err != nil {
 		return fmt.Errorf("user not found")
 	}
@@ -97,7 +104,7 @@ func (u *AuthUsecase) ChangePassword(userID uint, oldPassword, newPassword, conf
 
 	user.Password = utils.HashPassword(newPassword)
 
-	if err := u.repo.UpdatePassword(user); err != nil {
+	if err := u.userRepo.UpdatePassword(user); err != nil {
 		return fmt.Errorf("failed to update password: %w", err)
 	}
 
