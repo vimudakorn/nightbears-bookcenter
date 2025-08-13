@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/vimudakorn/internal/domain"
-	groupproductrequest "github.com/vimudakorn/internal/request/group_product_request"
+	groupproductresponse "github.com/vimudakorn/internal/responses/group_product_response"
 	"gorm.io/gorm"
 )
 
@@ -108,8 +108,8 @@ func (g *GroupProductGormRepo) CreateMulti(groupProducts []domain.GroupProduct) 
 // 	return groupProducts, nil
 // }
 
-func (g *GroupProductGormRepo) GetProductByGroupID(groupID uint) ([]groupproductrequest.GroupProductWithDetail, error) {
-	var result []groupproductrequest.GroupProductWithDetail
+func (g *GroupProductGormRepo) GetProductByGroupID(groupID uint) ([]groupproductresponse.GroupProductWithDetail, error) {
+	var result []groupproductresponse.GroupProductWithDetail
 
 	err := g.db.Table("group_products").
 		Select(`

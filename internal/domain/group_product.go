@@ -1,7 +1,7 @@
 package domain
 
 import (
-	groupproductrequest "github.com/vimudakorn/internal/request/group_product_request"
+	groupproductresponse "github.com/vimudakorn/internal/responses/group_product_response"
 	"gorm.io/gorm"
 )
 
@@ -16,7 +16,7 @@ type GroupProductRepository interface {
 	Create(groupProduct *GroupProduct) error
 	CreateMulti(groupProducts []GroupProduct) error
 	// GetProductByGroupID(groupID uint) ([]GroupProduct, error)
-	GetProductByGroupID(groupID uint) ([]groupproductrequest.GroupProductWithDetail, error)
+	GetProductByGroupID(groupID uint) ([]groupproductresponse.GroupProductWithDetail, error)
 	CreateWithProduct(tx *gorm.DB, pg *GroupProduct) error
 	IsProductInGroupID(groupID uint, productID uint) (bool, error)
 	Update(product *GroupProduct) error

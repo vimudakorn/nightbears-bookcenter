@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/vimudakorn/internal/domain"
-	groupproductrequest "github.com/vimudakorn/internal/request/group_product_request"
+	groupproductresponse "github.com/vimudakorn/internal/responses/group_product_response"
 )
 
 type GroupProductUsecase struct {
@@ -67,7 +67,7 @@ func (gp *GroupProductUsecase) FindByGroupAndProductID(groupID uint, productID u
 // 	return gp.groupProductRepo.GetProductByGroupID(groupID)
 // }
 
-func (gp *GroupProductUsecase) GetProductByGroupID(groupID uint) ([]groupproductrequest.GroupProductWithDetail, error) {
+func (gp *GroupProductUsecase) GetProductByGroupID(groupID uint) ([]groupproductresponse.GroupProductWithDetail, error) {
 	return gp.groupProductRepo.GetProductByGroupID(groupID)
 }
 
