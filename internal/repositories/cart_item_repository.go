@@ -37,9 +37,22 @@ func (c *CartItemGormRepo) Delete(cartID uint, cartItemID uint) error {
 	return nil
 }
 
-// Update implements domain.CartItemRepository.
 func (c *CartItemGormRepo) Update(cartItem *domain.CartItem) error {
-	return c.db.Model(&domain.CartItem{}).Where("cart_id = ? AND group_id = ? AND product_id = ?", cartItem.CartID, cartItem.GroupID, cartItem.ProductID).Updates(map[string]interface{}{
+	query := c.db.Model(&domain.CartItem{}).Where("cart_id = ?", cartItem.CartID)
+
+	if cartItem.ProductID != nil {
+		query = query.Where("product_id = ?", *cartItem.ProductID)
+	} else {
+		query = query.Where("product_id IS NULL")
+	}
+
+	if cartItem.GroupID != nil {
+		query = query.Where("group_id = ?", *cartItem.GroupID)
+	} else {
+		query = query.Where("group_id IS NULL")
+	}
+
+	return query.Updates(map[string]interface{}{
 		"quantity": cartItem.Quantity,
 	}).Error
 }
@@ -48,17 +61,33 @@ func (c *CartItemGormRepo) Update(cartItem *domain.CartItem) error {
 func (c *CartItemGormRepo) UpdateItemsInCartID(cartID uint, cartItems []domain.CartItem) error {
 	return c.db.Transaction(func(tx *gorm.DB) error {
 		for _, item := range cartItems {
+			query := tx.Model(&domain.CartItem{}).Where("cart_id = ?", cartID)
+
+			if item.ProductID != nil {
+				query = query.Where("product_id = ?", *item.ProductID)
+			} else {
+				query = query.Where("product_id IS NULL")
+			}
+
+			if item.GroupID != nil {
+				query = query.Where("group_id = ?", *item.GroupID)
+			} else {
+				query = query.Where("group_id IS NULL")
+			}
+
 			var existing domain.CartItem
-			err := tx.Where("cart_id = ? AND group_id = ? AND product_id = ?", item.CartID, item.GroupID, item.ProductID).First(&existing).Error
+			err := query.First(&existing).Error
 
 			if errors.Is(err, gorm.ErrRecordNotFound) {
+				// ถ้าไม่เจอ ให้ข้าม
 				continue
 			}
 			if err != nil {
 				return err
 			}
-			existing.Quantity = item.Quantity
 
+			// อัปเดต quantity
+			existing.Quantity = item.Quantity
 			if err := tx.Save(&existing).Error; err != nil {
 				return err
 			}
@@ -78,12 +107,16 @@ func (c *CartItemGormRepo) GetItemsByCartID(cartID uint) ([]cartitemresponse.Car
 			u.email AS user_email,
 			ci.product_id,
 			p.name AS product_name,
-			p.price,
+			p.price AS product_price,
+			ci.group_id,
+			g.name AS group_name,
+			g.sale_price AS group_price,
 			ci.quantity
 		`).
 		Joins("JOIN carts c ON c.id = ci.cart_id AND c.deleted_at IS NULL").
-		Joins("JOIN products p ON p.id = ci.product_id AND p.deleted_at IS NULL").
 		Joins("JOIN users u ON u.id = c.user_id").
+		Joins("LEFT JOIN products p ON p.id = ci.product_id AND p.deleted_at IS NULL").
+		Joins("LEFT JOIN groups g ON g.id = ci.group_id AND g.deleted_at IS NULL").
 		Where("ci.cart_id = ? AND ci.deleted_at IS NULL", cartID).
 		Scan(&result).Error
 

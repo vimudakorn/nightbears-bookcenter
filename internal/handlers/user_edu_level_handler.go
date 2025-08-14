@@ -128,3 +128,19 @@ func (h *UserEduLevelHandler) Delete(c *fiber.Ctx) error {
 		"message": "Education Level deleted from user successfully",
 	})
 }
+
+func (h *UserEduLevelHandler) GetByUserID(c *fiber.Ctx) error {
+	userID, ok := c.Locals("user_id").(uint)
+	if !ok {
+		return fiber.NewError(fiber.StatusBadRequest, "invalid user_id type")
+	}
+
+	levels, err := h.usecases.GetByUserID(userID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to get education level by id"})
+	}
+	return c.JSON(fiber.Map{
+		"data": levels,
+	})
+
+}

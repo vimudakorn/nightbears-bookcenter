@@ -16,6 +16,8 @@ func SetupRoutes(app *fiber.App,
 	groupProductHandler *handlers.GroupProductHandler,
 	cartHandler *handlers.CartHandler,
 	cartItemHandler *handlers.CartItemHandler,
+	orderHandler *handlers.OrderHandler,
+	orderItemHandler *handlers.OrderItemHandler,
 ) {
 	// Public routes
 	app.Post("/login", authHandler.Login)
@@ -76,6 +78,12 @@ func SetupRoutes(app *fiber.App,
 	// 2. UpdateItemInCart (1)
 	api.Get("/carts", cartItemHandler.GetOwnItemInCard)
 	api.Post("/carts", cartItemHandler.AddOrUpdateMultiCartItems)
-	api.Patch("/carts/:id", cartItemHandler.UpdateItemsInCart)
+	api.Patch("/carts/:id", cartItemHandler.Update)
 	api.Delete("/carts/:cartItemID", cartItemHandler.DeleteCartItem)
+
+	api.Post("/orders", orderHandler.Create)
+	api.Get("/orders", orderHandler.GetAll)
+	api.Get("/orders/:id", orderHandler.GetByID)
+	api.Put("/orders/:id", orderHandler.Update)
+	api.Delete("/orders/:id", orderHandler.Delete)
 }

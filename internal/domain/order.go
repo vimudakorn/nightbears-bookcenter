@@ -10,3 +10,11 @@ type Order struct {
 	Status     string      `gorm:"not null"`
 	Items      []OrderItem `gorm:"foreignKey:OrderID;constraint:OnDelete:CASCADE;"`
 }
+
+type OrderRepository interface {
+	Create(order *Order) error
+	GetByID(id uint) (*Order, error)
+	GetAll(page, limit int, search, sortBy, orderBy string) ([]Order, int64, error)
+	Update(order *Order) error
+	Delete(id uint) error
+}
