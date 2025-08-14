@@ -9,6 +9,13 @@ type UserEduLevelGormRepo struct {
 	db *gorm.DB
 }
 
+// GetByUserID implements domain.UserEduLevelRepository.
+func (u *UserEduLevelGormRepo) GetByUserID(userID uint) ([]domain.UserEduLevel, error) {
+	var levels []domain.UserEduLevel
+	err := u.db.Where("user_id = ?", userID).Find(&levels).Error
+	return levels, err
+}
+
 // IsEduLevelExist implements domain.UserEduLevelRepository.
 func (u *UserEduLevelGormRepo) IsEduLevelExist(eduLevelID uint) (bool, error) {
 	var count int64

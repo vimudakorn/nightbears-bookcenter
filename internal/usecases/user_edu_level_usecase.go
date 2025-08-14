@@ -52,3 +52,7 @@ func (el *UserEduLevelUsecase) UpdateByID(id uint, update *domain.UserEduLevel) 
 func (el *UserEduLevelUsecase) Delete(userEduLevelID uint) error {
 	return el.eduLevelRepo.Delete(userEduLevelID)
 }
+
+func (el *UserEduLevelUsecase) GetByUserID(userID uint) ([]domain.UserEduLevel, error) {
+	return el.eduLevelRepo.GetByUserID(userID)
+}

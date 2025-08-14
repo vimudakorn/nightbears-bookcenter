@@ -12,6 +12,7 @@ type UserEduLevel struct {
 
 type UserEduLevelRepository interface {
 	Create(eduLevel *UserEduLevel) error
+	GetByUserID(userID uint) ([]UserEduLevel, error)
 	CreateMultiple(levels []UserEduLevel) error
 	IsEduLevelNameExist(eduLevel string, eduYear int, userID uint) (bool, error)
 	Update(id uint, update *UserEduLevel) error
