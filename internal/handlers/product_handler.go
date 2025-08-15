@@ -82,12 +82,17 @@ func (h *ProductHandler) AddNewProduct(c *fiber.Ctx) error {
 			}
 		}
 
+		if req.SalePrice > req.Price {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to set sale price more expansive than price"})
+		}
+
 		product := &domain.Product{
 			ProductCode:   req.ProductCode,
 			ProductType:   req.ProductType,
 			Name:          req.Name,
 			Description:   req.Description,
 			Price:         req.Price,
+			Discount:      req.Price - req.SalePrice,
 			Stock:         req.Stock,
 			ImageURL:      req.ImageURL,
 			CategoryID:    req.CategoryID,
@@ -100,9 +105,24 @@ func (h *ProductHandler) AddNewProduct(c *fiber.Ctx) error {
 		}
 
 		book := &domain.Book{
-			ProductID: product.ID,
-			Author:    req.Author,
-			ISBN:      req.ISBN,
+			ProductID:        product.ID,
+			Subject:          req.Subject,
+			LearningArea:     req.LearningArea,
+			Grade:            req.Grade,
+			Publisher:        req.Grade,
+			Editor:           req.Editor,
+			PublishYear:      req.PublishYear,
+			Size:             req.Size,
+			PageCount:        req.PageCount,
+			Paper:            req.Paper,
+			PrintType:        req.PrintType,
+			Weight:           req.Weight,
+			LicenseURL:       req.LicenseURL,
+			CertificateURL:   req.CertificateURL,
+			WarrantyURL:      req.WarrantyURL,
+			SampleContentURL: req.SampleContentURL,
+			Author:           req.Author,
+			ISBN:             req.ISBN,
 		}
 
 		if err := h.usecases.CreateBook(book); err != nil {
@@ -123,12 +143,17 @@ func (h *ProductHandler) AddNewProduct(c *fiber.Ctx) error {
 			}
 		}
 
+		if req.SalePrice > req.Price {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to set sale price more expansive than price"})
+		}
+
 		product := &domain.Product{
 			ProductCode:   req.ProductCode,
 			ProductType:   req.ProductType,
 			Name:          req.Name,
 			Description:   req.Description,
 			Price:         req.Price,
+			Discount:      req.Price - req.SalePrice,
 			Stock:         req.Stock,
 			ImageURL:      req.ImageURL,
 			CategoryID:    req.CategoryID,
@@ -164,12 +189,17 @@ func (h *ProductHandler) AddNewProduct(c *fiber.Ctx) error {
 			}
 		}
 
+		if req.SalePrice > req.Price {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to set sale price more expansive than price"})
+		}
+
 		product := &domain.Product{
 			ProductCode:   req.ProductCode,
 			ProductType:   req.ProductType,
 			Name:          req.Name,
 			Description:   req.Description,
 			Price:         req.Price,
+			Discount:      req.Price - req.SalePrice,
 			Stock:         req.Stock,
 			ImageURL:      req.ImageURL,
 			CategoryID:    req.CategoryID,
@@ -221,9 +251,13 @@ func (h *ProductHandler) UpdateProduct(c *fiber.Ctx) error {
 			return fiber.NewError(fiber.StatusInternalServerError, "failed to fetch tags")
 		}
 	}
+	if req.SalePrice > req.Price {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to set sale price more expansive than price"})
+	}
 
 	product.Name = req.Name
 	product.Price = req.Price
+	product.Discount = req.Price - req.SalePrice
 	product.Stock = req.Stock
 	product.Tags = tags
 

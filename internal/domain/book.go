@@ -17,7 +17,6 @@ type Book struct {
 	Paper            string // "กระดาษ"
 	PrintType        string // "พิมพ์"
 	Weight           string // "น้ำหนัก"
-	Price            string // "ราคา"
 	LicenseURL       string // "ใบอนุญาต"
 	CertificateURL   string // "ใบประกาศ"
 	WarrantyURL      string // "ใบประกัน"
