@@ -25,6 +25,7 @@ func main() {
 	groupRepo := repositories.NewGroupGormRepo(db)
 	cartRepo := repositories.NewCartGormRepo(db)
 	cartItemRepo := repositories.NewCartItemGormRepo(db)
+	userEduLevelRepo := repositories.NewUserEduLevelGormRepo(db)
 	orderRepo := repositories.NewOrderGormRepo(db)
 	orderItemRepo := repositories.NewOrderItemGormRepo(db)
 
@@ -37,8 +38,9 @@ func main() {
 	groupUsecase := usecases.NewGroupUsecase(groupRepo, groupProductRepo)
 	cartUsecase := usecases.NewCartUsecase(cartRepo)
 	cartItemUsecase := usecases.NewCartItemUsecase(cartItemRepo, cartRepo, groupRepo, productRepo)
+	userEduLevelUsecase := usecases.NewUserEduLevelUsecase(userEduLevelRepo)
 	orderUsecase := usecases.NewOrderUsecase(orderRepo, orderItemRepo)
-	orderItemUsecase := usecases.NewOrderItemUsecase(orderItemRepo)
+	orderItemUsecase := usecases.NewOrderItemUsecase(orderItemRepo, orderRepo, groupRepo, productRepo)
 
 	authHandler := handlers.NewAuthHandler(authUsecase)
 	userHandler := handlers.NewUserHandler(userUsecase)
@@ -49,6 +51,7 @@ func main() {
 	groupHandler := handlers.NewGroupHandler(groupUsecase)
 	cartHandler := handlers.NewCartHandler(cartUsecase)
 	cartItemHandler := handlers.NewCartItemHandler(cartItemUsecase)
+	userEduLevelHandler := handlers.NewUserEduLevelHandler(userEduLevelUsecase)
 	orderHandler := handlers.NewOrderHandler(orderUsecase)
 	orderItemHandler := handlers.NewOrderItemHandler(orderItemUsecase)
 
@@ -56,6 +59,6 @@ func main() {
 	// mockUsecase.AddNewData()
 
 	app := fiber.New()
-	routes.SetupRoutes(app, authHandler, userHandler, productHandler, categoryHandler, tagHandler, groupHandler, groupProductHandler, cartHandler, cartItemHandler, orderHandler, orderItemHandler)
+	routes.SetupRoutes(app, authHandler, userHandler, productHandler, categoryHandler, tagHandler, groupHandler, groupProductHandler, cartHandler, cartItemHandler, userEduLevelHandler, orderHandler, orderItemHandler)
 	app.Listen(":8080")
 }

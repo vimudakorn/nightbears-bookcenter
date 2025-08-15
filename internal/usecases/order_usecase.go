@@ -1,6 +1,9 @@
 package usecases
 
-import "github.com/vimudakorn/internal/domain"
+import (
+	"github.com/vimudakorn/internal/domain"
+	orderitemresponse "github.com/vimudakorn/internal/responses/order_item_response"
+)
 
 type OrderUsecase struct {
 	orderRepo     domain.OrderRepository
@@ -12,7 +15,6 @@ func NewOrderUsecase(oRepo domain.OrderRepository, oiRepoo domain.OrderItemRepos
 }
 
 func (uc *OrderUsecase) CreateOrder(o *domain.Order) error {
-	// auto total
 	var total float64
 	for _, it := range o.Items {
 		total += float64(it.Quantity) * it.PriceAtPurchase
@@ -23,6 +25,10 @@ func (uc *OrderUsecase) CreateOrder(o *domain.Order) error {
 	}
 	return uc.orderRepo.Create(o)
 }
+func (uc *OrderUsecase) GetOryderByUserID(userID uint) ([]domain.Order, error) {
+	return uc.orderRepo.GetByUserID(userID)
+}
+
 func (uc *OrderUsecase) GetOrderByID(id uint) (*domain.Order, error) {
 	return uc.orderRepo.GetByID(id)
 }
@@ -37,15 +43,15 @@ func (uc *OrderUsecase) DeleteOrder(id uint) error {
 }
 
 // Items
-func (uc *OrderUsecase) AddOrderItem(it *domain.OrderItem) error {
-	return uc.orderItemRepo.Create(it)
+func (uc *OrderUsecase) AddOrderItem(orderID uint, it *domain.OrderItem) error {
+	return uc.orderItemRepo.AddOrUpdateOrderItem(orderID, it)
 }
-func (uc *OrderUsecase) GetOrderItems(orderID uint) ([]domain.OrderItem, error) {
-	return uc.orderItemRepo.GetByOrderID(orderID)
+func (uc *OrderUsecase) GetOrderItems(orderID uint) ([]orderitemresponse.OrderItemDetailResponse, error) {
+	return uc.orderItemRepo.GetItemsByOrderID(orderID)
 }
 func (uc *OrderUsecase) UpdateOrderItem(it *domain.OrderItem) error {
 	return uc.orderItemRepo.Update(it)
 }
-func (uc *OrderUsecase) DeleteOrderItem(id uint) error {
-	return uc.orderItemRepo.Delete(id)
+func (uc *OrderUsecase) DeleteOrderItem(orderID uint, orderItemID uint) error {
+	return uc.orderItemRepo.Delete(orderID, orderItemID)
 }

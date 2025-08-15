@@ -90,6 +90,10 @@ func (h *UserEduLevelHandler) UpdateEduLevels(c *fiber.Ctx) error {
 }
 
 func (h *UserEduLevelHandler) UpdateEduLevel(c *fiber.Ctx) error {
+	eduID, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid user education level ID"})
+	}
 	var req useredulevelrequest.UpdateEduLevelRequest
 	if err := c.BodyParser(&req); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid request")
@@ -101,7 +105,7 @@ func (h *UserEduLevelHandler) UpdateEduLevel(c *fiber.Ctx) error {
 		EduYear:      req.EduYear,
 	}
 
-	if err := h.usecases.UpdateByID(req.ID, updated); err != nil {
+	if err := h.usecases.UpdateByID(uint(eduID), updated); err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, "Failed to update edu level")
 	}
 

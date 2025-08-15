@@ -11,6 +11,17 @@ type OrderGormRepo struct {
 	db *gorm.DB
 }
 
+// GetByUserID implements domain.OrderRepository.
+func (r *OrderGormRepo) GetByUserID(userID uint) ([]domain.Order, error) {
+	var orders []domain.Order
+	if err := r.db.Preload("Items").
+		Where("user_id = ?", userID).
+		Find(&orders).Error; err != nil {
+		return nil, err
+	}
+	return orders, nil
+}
+
 func (r *OrderGormRepo) Create(order *domain.Order) error {
 	return r.db.Create(order).Error
 }

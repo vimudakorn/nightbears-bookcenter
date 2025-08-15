@@ -28,11 +28,14 @@ func (u *UserEduLevelGormRepo) Delete(userEduLevelID uint) error {
 	return u.db.Where("id = ?", userEduLevelID).Delete(&domain.UserEduLevel{}).Error
 }
 
-// Update implements domain.UserEduLevelRepository.
 func (u *UserEduLevelGormRepo) Update(id uint, update *domain.UserEduLevel) error {
 	return u.db.Model(&domain.UserEduLevel{}).
 		Where("id = ?", id).
-		Updates(update).Error
+		Updates(map[string]interface{}{
+			"edu_level":     update.EduLevel,
+			"student_count": update.StudentCount,
+			"edu_year":      update.EduYear,
+		}).Error
 }
 
 // UpdateMultiEduLevel implements domain.UserEduLevelRepository.

@@ -5,6 +5,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/vimudakorn/internal/domain"
+	orderrequest "github.com/vimudakorn/internal/request/order_request"
 	"github.com/vimudakorn/internal/usecases"
 )
 
@@ -16,15 +17,56 @@ func NewOrderHandler(uc *usecases.OrderUsecase) *OrderHandler {
 	return &OrderHandler{usecases: uc}
 }
 
+func (h *OrderHandler) GetByUserID(c *fiber.Ctx) error {
+	userID, err := strconv.Atoi(c.Params("user_id"))
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, "invalid user ID")
+	}
+
+	cart, err := h.usecases.GetOryderByUserID(uint(userID))
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to find cart by user ID"})
+	}
+	return c.JSON(fiber.Map{
+		"data": cart,
+	})
+}
+
+//	func (h *OrderHandler) Create(c *fiber.Ctx) error {
+//		var req domain.Order
+//		if err := c.BodyParser(&req); err != nil {
+//			return fiber.NewError(fiber.StatusBadRequest, "invalid body")
+//		}
+//		if err := h.usecases.CreateOrder(&req); err != nil {
+//			return fiber.NewError(fiber.StatusBadRequest, err.Error())
+//		}
+//		return c.Status(fiber.StatusCreated).JSON(req)
+//	}
 func (h *OrderHandler) Create(c *fiber.Ctx) error {
-	var req domain.Order
+	var req orderrequest.CreateOrderRequest
 	if err := c.BodyParser(&req); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, "invalid body")
 	}
-	if err := h.usecases.CreateOrder(&req); err != nil {
+
+	order := domain.Order{
+		UserID:     req.UserID,
+		TotalPrice: req.TotalPrice,
+		Status:     req.Status,
+	}
+
+	for _, item := range req.Items {
+		order.Items = append(order.Items, domain.OrderItem{
+			ProductID:       item.ProductID,
+			GroupID:         item.GroupID,
+			Quantity:        item.Quantity,
+			PriceAtPurchase: item.Price,
+		})
+	}
+
+	if err := h.usecases.CreateOrder(&order); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
-	return c.Status(fiber.StatusCreated).JSON(req)
+	return c.Status(fiber.StatusCreated).JSON(order)
 }
 
 func (h *OrderHandler) GetByID(c *fiber.Ctx) error {

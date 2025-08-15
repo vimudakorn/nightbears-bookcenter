@@ -1,6 +1,9 @@
 package domain
 
-import "gorm.io/gorm"
+import (
+	orderitemresponse "github.com/vimudakorn/internal/responses/order_item_response"
+	"gorm.io/gorm"
+)
 
 type OrderItem struct {
 	gorm.Model
@@ -12,9 +15,10 @@ type OrderItem struct {
 }
 
 type OrderItemRepository interface {
-	Create(item *OrderItem) error
-	GetByID(id uint) (*OrderItem, error)
-	GetByOrderID(orderID uint) ([]OrderItem, error)
+	Delete(orderID uint, orderItemID uint) error
 	Update(item *OrderItem) error
-	Delete(id uint) error
+	UpdateItemsInOrderID(orderID uint, items []OrderItem) error
+	GetItemsByOrderID(orderID uint) ([]orderitemresponse.OrderItemDetailResponse, error)
+	AddOrUpdateOrderItem(orderID uint, item *OrderItem) error
+	AddOrUpdateMultiOrderItems(orderID uint, items []OrderItem) error
 }
