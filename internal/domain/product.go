@@ -14,7 +14,7 @@ type Product struct {
 	Discount      float64 `gorm:"type:numeric(10,2);default:0"`
 	Stock         int     `gorm:"default:0"`
 	ImageURL      string
-	CategoryID    *uint `gorm:"not null"`
+	CategoryID    *uint
 	Category      Category
 	ProductImages []ProductImage `gorm:"foreignKey:ProductID"`
 	Tags          []Tag          `gorm:"many2many:product_tags"`

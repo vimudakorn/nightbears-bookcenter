@@ -32,10 +32,10 @@ func ConnectDB() *gorm.DB {
 }
 
 func Migrate(db *gorm.DB) {
-	// db.Migrator().DropTable(&domain.User{}, &domain.UserEduLevel{}, &domain.Profile{}, &domain.Cart{}, &domain.Category{}, &domain.Product{}, &domain.Book{}, &domain.LearningSupply{}, &domain.OfficeSupply{}, &domain.Order{}, &domain.OrderItem{}, &domain.CartItem{}, &domain.ProductCategory{}, &domain.ProductImage{}, &domain.Group{}, &domain.GroupProduct{}, &domain.Tag{})
-
+	// db.Migrator().DropTable(&domain.Level{}, &domain.UserEduLevel{}, &domain.Profile{}, &domain.Cart{}, &domain.Category{}, &domain.Product{}, &domain.Book{}, &domain.LearningSupply{}, &domain.OfficeSupply{}, &domain.Order{}, &domain.OrderItem{}, &domain.CartItem{}, &domain.ProductCategory{}, &domain.ProductImage{}, &domain.Group{}, &domain.GroupProduct{}, &domain.Tag{})
+	// &domain.User{},
 	// if err := db.AutoMigrate(&models.User{}, &models.Profile{}, &models.Cart{}, &models.Category{}, &models.Product{}, &models.Book{}, &models.LearningSupply{}, &models.OfficeSupply{}, &models.Order{}, &models.OrderItem{}, &models.CartItem{}, &models.BookCategory{}, &models.BookImage{}, &models.Group{}, &models.GroupProduct{}); err != nil {
-	if err := db.AutoMigrate(&domain.User{}, &domain.UserEduLevel{}, &domain.Profile{}, &domain.Cart{}, &domain.Category{}, &domain.Product{}, &domain.Book{}, &domain.LearningSupply{}, &domain.OfficeSupply{}, &domain.Order{}, &domain.OrderItem{}, &domain.CartItem{}, &domain.ProductCategory{}, &domain.ProductImage{}, &domain.Group{}, &domain.GroupProduct{}, &domain.Tag{}); err != nil {
+	if err := db.AutoMigrate(&domain.User{}, &domain.Level{}, &domain.UserEduLevel{}, &domain.Profile{}, &domain.Cart{}, &domain.Category{}, &domain.Product{}, &domain.Book{}, &domain.LearningSupply{}, &domain.OfficeSupply{}, &domain.Order{}, &domain.OrderItem{}, &domain.CartItem{}, &domain.ProductCategory{}, &domain.ProductImage{}, &domain.Group{}, &domain.GroupProduct{}, &domain.Tag{}); err != nil {
 		log.Fatalf("Migration failed: %v", err)
 	}
 

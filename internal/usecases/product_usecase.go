@@ -1,6 +1,9 @@
 package usecases
 
-import "github.com/vimudakorn/internal/domain"
+import (
+	"github.com/vimudakorn/internal/domain"
+	"github.com/vimudakorn/internal/utils"
+)
 
 type ProductUsecase struct {
 	productRepo domain.ProductRepository
@@ -90,3 +93,70 @@ func (r *ProductUsecase) AddTagsToProduct(productID uint, tagIDs []uint) error {
 
 	return nil
 }
+
+func (u *ProductUsecase) CreateFromJSON(path string) error {
+	products, err := utils.ReadProductsFromJSON(path)
+	if err != nil {
+		return err
+	}
+
+	for _, p := range products {
+		if err := u.productRepo.CreateProduct(&p); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// func (u *ProductUsecase) ImportBooksFromJSON(filename string, categoryID uint) error {
+// 	file, err := os.Open(filename)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	defer file.Close()
+
+// 	var raws []jsons.RawBook
+// 	if err := json.NewDecoder(file).Decode(&raws); err != nil {
+// 		return err
+// 	}
+
+// 	for _, r := range raws {
+// 		price := utils.ParsePrice(r.Price)
+
+// 		p := domain.Product{
+// 			ProductCode: 0,
+// 			ProductType: "book",
+// 			Name:        r.Name,
+// 			Price:       price,
+// 			ImageURL:    r.ImageURL,
+// 			CategoryID:  &categoryID,
+// 			ProductImages: []domain.ProductImage{
+// 				{ImageURL: r.ImageURL},
+// 			},
+// 			Book: &domain.Book{
+// 				Subject:          r.Subject,
+// 				LearningArea:     r.LearningArea,
+// 				Grade:            r.Grade,
+// 				Publisher:        r.Publisher,
+// 				Editor:           r.Editor,
+// 				PublishYear:      r.PublishYear,
+// 				Size:             r.Size,
+// 				PageCount:        r.PageCount,
+// 				Paper:            r.Paper,
+// 				PrintType:        r.PrintType,
+// 				Weight:           r.Weight,
+// 				LicenseURL:       utils.GetString(r.LicenseURL),
+// 				CertificateURL:   r.CertificateURL,
+// 				WarrantyURL:      utils.GetString(r.WarrantyURL),
+// 				SampleContentURL: utils.GetString(r.SampleContentURL),
+// 				Author:           r.Editor,
+// 			},
+// 		}
+
+// 		if err := u.productRepo.CreateProduct(&p); err != nil {
+// 			return err
+// 		}
+// 	}
+
+// 	return nil
+// }

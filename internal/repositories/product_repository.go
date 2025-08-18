@@ -5,6 +5,7 @@ import (
 
 	"github.com/vimudakorn/internal/domain"
 	productrequest "github.com/vimudakorn/internal/request/product_request"
+	"github.com/vimudakorn/internal/utils"
 	"gorm.io/gorm"
 )
 
@@ -54,8 +55,19 @@ func NewProductGormDB(db *gorm.DB) domain.ProductRepository {
 	return &ProductGormRepo{db: db}
 }
 
-func (b *ProductGormRepo) CreateProduct(Product *domain.Product) error {
-	return b.db.Create(Product).Error
+// func (b *ProductGormRepo) CreateProduct(Product *domain.Product) error {
+// 	return b.db.Create(Product).Error
+// }
+
+func (r *ProductGormRepo) CreateProduct(p *domain.Product) error {
+	if p.ProductCode == 0 {
+		code, err := utils.GenerateUniqueProductCode(r.db)
+		if err != nil {
+			return err
+		}
+		p.ProductCode = code
+	}
+	return r.db.Create(p).Error
 }
 
 // Delete implements domain.ProductRepository.
@@ -141,12 +153,15 @@ func (b *ProductGormRepo) GetFilteredProducts(page, limit int, sortBy, orderBy s
 }
 
 // GetPagination implements domain.ProductRepository.
-func (b *ProductGormRepo) GetPagination(page int, limit int, search string, sortBy string, orderBy string) ([]domain.Product, int64, error) {
+func (r *ProductGormRepo) GetPagination(page int, limit int, search, sortBy, orderBy string) ([]domain.Product, int64, error) {
 	var products []domain.Product
 	var count int64
 
+	// กำหนดค่า default และตรวจสอบ sortBy / orderBy
 	allowedSortBy := map[string]bool{
-		"name": true,
+		"name":  true,
+		"price": true,
+		"id":    true,
 	}
 	allowedOrderBy := map[string]bool{
 		"asc":  true,
@@ -163,20 +178,29 @@ func (b *ProductGormRepo) GetPagination(page int, limit int, search string, sort
 	offset := (page - 1) * limit
 	order := fmt.Sprintf("%s %s", sortBy, orderBy)
 
-	query := b.db.Model(&domain.Product{})
+	query := r.db.Model(&domain.Product{})
 
 	if search != "" {
 		query = query.Where("name ILIKE ?", "%"+search+"%")
 	}
 
-	query.Count(&count)
+	// นับจำนวนทั้งหมดก่อน limit/offset
+	if err := query.Count(&count).Error; err != nil {
+		return nil, 0, err
+	}
 
+	// Preload ความสัมพันธ์
 	err := query.
 		Preload("Category").
 		Preload("Tags").
 		Preload("Book").
 		Preload("LearningSupply").
-		Preload("OfficeSupply").Order(order).Limit(limit).Offset(offset).Find(&products).Error
+		Preload("OfficeSupply").
+		Order(order).
+		Limit(limit).
+		Offset(offset).
+		Find(&products).Error
+
 	return products, count, err
 }
 

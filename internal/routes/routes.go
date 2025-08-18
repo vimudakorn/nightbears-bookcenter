@@ -27,6 +27,8 @@ func SetupRoutes(app *fiber.App,
 
 	api := app.Group("/api", middleware.JWTMiddleware)
 
+	api.Post("/import-books", productHandler.ImportFromJSON)
+
 	api.Get("/me", func(c *fiber.Ctx) error {
 		userID := c.Locals("user_id")
 		role := c.Locals("role")

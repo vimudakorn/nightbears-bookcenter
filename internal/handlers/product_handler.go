@@ -7,7 +7,7 @@ import (
 	"github.com/vimudakorn/constants"
 	"github.com/vimudakorn/internal/domain"
 	productrequest "github.com/vimudakorn/internal/request/product_request"
-	"github.com/vimudakorn/internal/responses"
+	productresponse "github.com/vimudakorn/internal/responses/product_response"
 	"github.com/vimudakorn/internal/usecases"
 )
 
@@ -25,36 +25,18 @@ func (h *ProductHandler) GetAll(c *fiber.Ctx) error {
 	limit, _ := strconv.Atoi(c.Query("limit", "10"))
 	sortBy := c.Query("sortBy", "name")
 	sortOrder := c.Query("sortOrder", "asc")
-	if page < 1 {
-		page = 1
-	}
-
-	if limit < 1 {
-		limit = 10
-	}
 
 	products, count, err := h.usecases.GetPagination(page, limit, name, sortBy, sortOrder)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
-	var res []responses.ProductdataResponse
-	for _, product := range products {
-		res = append(res, responses.ProductdataResponse{
-			ID:           product.ID,
-			ProductCode:  product.ProductCode,
-			ProductType:  product.ProductType,
-			Name:         product.Name,
-			Description:  product.Description,
-			Price:        product.Price,
-			Stock:        product.Stock,
-			ImageURL:     product.ImageURL,
-			CategoryID:   *product.CategoryID,
-			ProductImage: product.ProductImages,
-			TagIDs:       product.Tags,
-		})
+
+	var res []productresponse.ProductdataResponse
+	for _, p := range products {
+		res = append(res, productresponse.MapProductToResponse(p))
 	}
+
 	return c.JSON(fiber.Map{
-		"full":       products,
 		"data":       res,
 		"page":       page,
 		"limit":      limit,
@@ -62,6 +44,50 @@ func (h *ProductHandler) GetAll(c *fiber.Ctx) error {
 		"totalPages": (int(count) + limit - 1) / limit,
 	})
 }
+
+// func (h *ProductHandler) GetAll(c *fiber.Ctx) error {
+// 	name := c.Query("name")
+// 	page, _ := strconv.Atoi(c.Query("page", "1"))
+// 	limit, _ := strconv.Atoi(c.Query("limit", "10"))
+// 	sortBy := c.Query("sortBy", "name")
+// 	sortOrder := c.Query("sortOrder", "asc")
+// 	if page < 1 {
+// 		page = 1
+// 	}
+
+// 	if limit < 1 {
+// 		limit = 10
+// 	}
+
+// 	products, count, err := h.usecases.GetPagination(page, limit, name, sortBy, sortOrder)
+// 	if err != nil {
+// 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+// 	}
+// 	var res []responses.ProductdataResponse
+// 	for _, product := range products {
+// 		res = append(res, responses.ProductdataResponse{
+// 			ID:           product.ID,
+// 			ProductCode:  product.ProductCode,
+// 			ProductType:  product.ProductType,
+// 			Name:         product.Name,
+// 			Description:  product.Description,
+// 			Price:        product.Price,
+// 			Stock:        product.Stock,
+// 			ImageURL:     product.ImageURL,
+// 			CategoryID:   *product.CategoryID,
+// 			ProductImage: product.ProductImages,
+// 			TagIDs:       product.Tags,
+// 		})
+// 	}
+// 	return c.JSON(fiber.Map{
+// 		"full":       products,
+// 		"data":       res,
+// 		"page":       page,
+// 		"limit":      limit,
+// 		"count":      count,
+// 		"totalPages": (int(count) + limit - 1) / limit,
+// 	})
+// }
 
 func (h *ProductHandler) AddNewProduct(c *fiber.Ctx) error {
 	productType := c.Query("type")
@@ -328,4 +354,12 @@ func (h *ProductHandler) Delete(c *fiber.Ctx) error {
 	}
 
 	return c.SendStatus(fiber.StatusNoContent)
+}
+
+func (h *ProductHandler) ImportFromJSON(c *fiber.Ctx) error {
+	file := c.Query("file", "internal/data/books.json")
+	if err := h.usecases.CreateFromJSON(file); err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.JSON(fiber.Map{"message": "Products imported successfully"})
 }
