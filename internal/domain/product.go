@@ -1,6 +1,8 @@
 package domain
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 type Product struct {
 	gorm.Model
@@ -40,4 +42,5 @@ type ProductRepository interface {
 	FindLearningID(productID uint) (uint, error)
 	FindOfficeID(productID uint) (uint, error)
 	IsProductIDExists(productID uint) (bool, error)
+	// GetFilteredProducts(page, limit int, sortBy, orderBy string, filter productrequest.ProductFilter) ([]Product, int64, error)
 }

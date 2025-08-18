@@ -42,6 +42,14 @@ func (uc *OrderUsecase) DeleteOrder(id uint) error {
 	return uc.orderRepo.Delete(id)
 }
 
+func (uc *OrderUsecase) UpdateOrderFields(orderID uint, fields map[string]interface{}) error {
+	return uc.orderRepo.UpdateOrderFields(orderID, fields)
+}
+
+func (uc *OrderUsecase) UpdateItemsInOrderID(orderID uint, items []domain.OrderItem) error {
+	return uc.orderRepo.UpdateItemsInOrderID(orderID, items)
+}
+
 // Items
 func (uc *OrderUsecase) AddOrderItem(orderID uint, it *domain.OrderItem) error {
 	return uc.orderItemRepo.AddOrUpdateOrderItem(orderID, it)
@@ -52,6 +60,7 @@ func (uc *OrderUsecase) GetOrderItems(orderID uint) ([]orderitemresponse.OrderIt
 func (uc *OrderUsecase) UpdateOrderItem(it *domain.OrderItem) error {
 	return uc.orderItemRepo.Update(it)
 }
+
 func (uc *OrderUsecase) DeleteOrderItem(orderID uint, orderItemID uint) error {
 	return uc.orderItemRepo.Delete(orderID, orderItemID)
 }

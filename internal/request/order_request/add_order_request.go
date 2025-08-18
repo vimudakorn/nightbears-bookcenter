@@ -1,7 +1,6 @@
 package orderrequest
 
 type CreateOrderRequest struct {
-	UserID     uint                 `json:"user_id"`
 	TotalPrice float64              `json:"total_price"`
 	Status     string               `json:"status"`
 	Items      []CreateOrderItemReq `json:"items"`

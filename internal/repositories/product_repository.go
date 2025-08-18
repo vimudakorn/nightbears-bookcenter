@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/vimudakorn/internal/domain"
+	productrequest "github.com/vimudakorn/internal/request/product_request"
 	"gorm.io/gorm"
 )
 
@@ -87,6 +88,56 @@ func (b *ProductGormRepo) FindByID(id uint) (*domain.Product, error) {
 		return nil, err
 	}
 	return &Product, nil
+}
+
+func (b *ProductGormRepo) GetFilteredProducts(page, limit int, sortBy, orderBy string, filter productrequest.ProductFilter) ([]domain.Product, int64, error) {
+	var products []domain.Product
+	var count int64
+
+	offset := (page - 1) * limit
+	order := fmt.Sprintf("%s %s", sortBy, orderBy)
+
+	query := b.db.Model(&domain.Product{})
+
+	// Dynamic filters
+	if filter.Name != "" {
+		query = query.Where("name ILIKE ?", "%"+filter.Name+"%")
+	}
+
+	if filter.ProductType != "" {
+		query = query.Where("product_type = ?", filter.ProductType)
+	}
+
+	// Filter fields เฉพาะ book
+	if filter.ProductType == "book" {
+		if filter.Subject != "" {
+			query = query.Joins("LEFT JOIN books b ON b.product_id = products.id").
+				Where("b.subject ILIKE ?", "%"+filter.Subject+"%")
+		}
+		if filter.Grade != "" {
+			query = query.Joins("LEFT JOIN books b ON b.product_id = products.id").
+				Where("b.grade = ?", filter.Grade)
+		}
+		if filter.Publisher != "" {
+			query = query.Joins("LEFT JOIN books b ON b.product_id = products.id").
+				Where("b.publisher ILIKE ?", "%"+filter.Publisher+"%")
+		}
+	}
+
+	query.Count(&count)
+
+	err := query.
+		Preload("Category").
+		Preload("Tags").
+		Preload("Book").
+		Preload("LearningSupply").
+		Preload("OfficeSupply").
+		Order(order).
+		Limit(limit).
+		Offset(offset).
+		Find(&products).Error
+
+	return products, count, err
 }
 
 // GetPagination implements domain.ProductRepository.

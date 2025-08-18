@@ -1,8 +1,6 @@
 package productrequest
 
-import (
-	"github.com/vimudakorn/internal/domain"
-)
+import "github.com/vimudakorn/internal/domain"
 
 type AddNewBookRequest struct {
 	ProductCode      int                   `json:"product_code" validate:"unique, required"`

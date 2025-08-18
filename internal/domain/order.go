@@ -18,4 +18,6 @@ type OrderRepository interface {
 	GetAll(page, limit int, search, sortBy, orderBy string) ([]Order, int64, error)
 	Update(order *Order) error
 	Delete(id uint) error
+	UpdateOrderFields(orderID uint, fields map[string]interface{}) error
+	UpdateItemsInOrderID(orderID uint, items []OrderItem) error
 }

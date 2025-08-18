@@ -20,7 +20,7 @@ func NewProductHandler(uc *usecases.ProductUsecase) *ProductHandler {
 }
 
 func (h *ProductHandler) GetAll(c *fiber.Ctx) error {
-	name := c.Query("username")
+	name := c.Query("name")
 	page, _ := strconv.Atoi(c.Query("page", "1"))
 	limit, _ := strconv.Atoi(c.Query("limit", "10"))
 	sortBy := c.Query("sortBy", "name")

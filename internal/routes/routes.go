@@ -72,7 +72,7 @@ func SetupRoutes(app *fiber.App,
 	api.Patch("/groups/:id/products/:productID", groupProductHandler.UpdateProductInGroup)
 	api.Delete("/groups/:id/products/:productID", groupProductHandler.DeleteProductInGroup)
 
-	api.Get("/carts/:user_id", cartHandler.GetByUserID)
+	// api.Get("/carts/:user_id", cartHandler.GetByUserID)
 
 	// there are func
 	// 1. AddOrUpdateCartItem (1)
@@ -83,8 +83,9 @@ func SetupRoutes(app *fiber.App,
 	api.Delete("/carts/:cartItemID", cartItemHandler.DeleteCartItem)
 
 	api.Get("/levels", userEduLevelHandler.GetByUserID)
-	api.Post("/levels", userEduLevelHandler.AddEduLevel)
-	api.Delete("levels/:id", userEduLevelHandler.Delete)
+	api.Post("/levels", userEduLevelHandler.CreateWithFixedLevels)
+	api.Put("/users/:id/edu-level", userEduLevelHandler.UpdateStudentCount)
+	api.Delete("levels/:id", userEduLevelHandler.DeleteByUserID)
 
 	api.Post("/orders", orderHandler.Create)
 	api.Get("/orders", orderHandler.GetAll)

@@ -96,7 +96,7 @@ func (c *CartItemGormRepo) UpdateItemsInCartID(cartID uint, cartItems []domain.C
 	})
 }
 
-// GetItemsByCardID implements domain.CartItemRepository.
+// GetItemsByCartID implements domain.CartItemRepository.
 func (c *CartItemGormRepo) GetItemsByCartID(cartID uint) ([]cartitemresponse.CartItemDetailResponse, error) {
 	var result []cartitemresponse.CartItemDetailResponse
 
@@ -106,22 +106,108 @@ func (c *CartItemGormRepo) GetItemsByCartID(cartID uint) ([]cartitemresponse.Car
 			u.id AS user_id,
 			u.email AS user_email,
 			ci.product_id,
+			p.product_type,
 			p.name AS product_name,
 			p.price AS product_price,
 			ci.group_id,
 			g.name AS group_name,
 			g.sale_price AS group_price,
-			ci.quantity
+			ci.quantity,
+
+			-- Book details
+			b.subject AS book_subject,
+			b.learning_area AS book_learning_area,
+			b.grade AS book_grade,
+			b.publisher AS book_publisher,
+			b.author AS book_author,
+			b.isbn AS book_isbn,
+
+			-- Learning supply details
+			ls.brand AS learning_brand,
+			ls.material AS learning_material,
+
+			-- Office supply details
+			os.color AS office_color,
+			os.size AS office_size
 		`).
 		Joins("JOIN carts c ON c.id = ci.cart_id AND c.deleted_at IS NULL").
 		Joins("JOIN users u ON u.id = c.user_id").
 		Joins("LEFT JOIN products p ON p.id = ci.product_id AND p.deleted_at IS NULL").
 		Joins("LEFT JOIN groups g ON g.id = ci.group_id AND g.deleted_at IS NULL").
+		Joins("LEFT JOIN books b ON b.product_id = p.id").
+		Joins("LEFT JOIN learning_supplies ls ON ls.product_id = p.id").
+		Joins("LEFT JOIN office_supplies os ON os.product_id = p.id").
 		Where("ci.cart_id = ? AND ci.deleted_at IS NULL", cartID).
 		Scan(&result).Error
 
 	return result, err
 }
+
+// func (c *CartItemGormRepo) GetItemsByCartID(cartID uint) ([]cartitemresponse.CartItemDetailResponse, error) {
+// 	var result []cartitemresponse.CartItemDetailResponse
+
+// 	// First: Get main cart item with product/group basic info
+// 	err := c.db.Table("cart_items ci").
+// 		Select(`
+// 			ci.cart_id,
+// 			u.id AS user_id,
+// 			u.email AS user_email,
+// 			ci.product_id,
+// 			p.name AS product_name,
+// 			p.price AS product_price,
+// 			ci.group_id,
+// 			g.name AS group_name,
+// 			g.sale_price AS group_price,
+// 			ci.quantity
+// 		`).
+// 		Joins("JOIN carts c ON c.id = ci.cart_id AND c.deleted_at IS NULL").
+// 		Joins("JOIN users u ON u.id = c.user_id").
+// 		Joins("LEFT JOIN products p ON p.id = ci.product_id AND p.deleted_at IS NULL").
+// 		Joins("LEFT JOIN groups g ON g.id = ci.group_id AND g.deleted_at IS NULL").
+// 		Where("ci.cart_id = ? AND ci.deleted_at IS NULL", cartID).
+// 		Scan(&result).Error
+
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	// Second: For each group, fetch group items and product details
+// 	for i, item := range result {
+// 		if item.GroupID != nil {
+// 			var groupProducts []cartitemresponse.GroupProductDetail
+// 			err := c.db.Table("group_products gp").
+// 				Select(`
+// 					gp.product_id,
+// 					p.name AS product_name,
+// 					p.price AS product_price,
+// 					p.product_type,
+// 					b.subject, b.learning_area, b.grade, b.publisher, b.author, b.isbn,
+// 					ls.brand, ls.material,
+// 					os.color, os.size
+// 				`).
+// 				Joins("JOIN products p ON p.id = gp.product_id").
+// 				Joins("LEFT JOIN books b ON b.product_id = p.id").
+// 				Joins("LEFT JOIN learning_supplies ls ON ls.product_id = p.id").
+// 				Joins("LEFT JOIN office_supplies os ON os.product_id = p.id").
+// 				Where("gp.group_id = ? AND p.deleted_at IS NULL", *item.GroupID).
+// 				Scan(&groupProducts).Error
+
+// 			if err != nil {
+// 				return nil, err
+// 			}
+
+// 			// Attach group products back
+// 			result[i].GroupDetail = cartitemresponse.GroupDetail{
+// 				GroupID:    *item.GroupID,
+// 				GroupName:  item.GroupName,
+// 				GroupPrice: item.GroupPrice,
+// 				Products:   groupProducts,
+// 			}
+// 		}
+// 	}
+
+// 	return result, nil
+// }
 
 // FindItemByID implements domain.CartItemRepository.
 func (c *CartItemGormRepo) FindItemByID(cartID uint, productID uint) (*domain.CartItem, error) {

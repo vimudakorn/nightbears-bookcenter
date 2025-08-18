@@ -4,19 +4,21 @@ import "gorm.io/gorm"
 
 type UserEduLevel struct {
 	gorm.Model
-	UserID       uint   `gorm:"not null"` // foreign key ไปยัง User
-	EduLevel     string `gorm:"not null"` // ระดับชั้น เช่น Grade 3
-	StudentCount int    `gorm:"not null"` // จำนวนผู้เรียนในระดับนั้น
-	EduYear      int    `gorm:"not null"`
+	UserID uint    `gorm:"not null"`                  // FK ไปยัง User
+	Levels []Level `gorm:"foreignKey:UserEduLevelID"` // relation
+}
+
+type Level struct {
+	gorm.Model
+	EduLevel       string
+	StudentCount   int
+	UserEduLevelID uint // FK back to UserEduLevel
 }
 
 type UserEduLevelRepository interface {
-	Create(eduLevel *UserEduLevel) error
-	GetByUserID(userID uint) ([]UserEduLevel, error)
-	CreateMultiple(levels []UserEduLevel) error
-	IsEduLevelNameExist(eduLevel string, eduYear int, userID uint) (bool, error)
-	Update(id uint, update *UserEduLevel) error
-	UpdateMultiEduLevel(updates []UserEduLevel) error
-	Delete(userEduLevelID uint) error
-	IsEduLevelExist(eduLevelID uint) (bool, error)
+	CreateWithFixedLevels(userID uint, counts map[string]int) (*UserEduLevel, error)
+	GetByUserID(userID uint) (*UserEduLevel, error)
+	UpdateStudentCount(userID uint, levelName string, count int) error
+	DeleteByUserID(userID uint) error
+	UpdateMultipleLevels(userID uint, counts map[string]int) error
 }

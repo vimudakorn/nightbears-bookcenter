@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/vimudakorn/internal/domain"
@@ -9,6 +10,58 @@ import (
 
 type OrderGormRepo struct {
 	db *gorm.DB
+}
+
+// UpdateOrderFields อัปเดตเฉพาะ field ของ order
+func (r *OrderGormRepo) UpdateOrderFields(orderID uint, fields map[string]interface{}) error {
+	if len(fields) == 0 {
+		return nil
+	}
+
+	var order domain.Order
+	if err := r.db.First(&order, orderID).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return fmt.Errorf("order with ID %d not found", orderID)
+		}
+		return err
+	}
+
+	return r.db.Model(&order).Updates(fields).Error
+}
+
+// UpdateItemsInOrderID อัปเดต order items หลายตัว โดย match ด้วย ProductID หรือ GroupID
+func (r *OrderGormRepo) UpdateItemsInOrderID(orderID uint, items []domain.OrderItem) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		for _, item := range items {
+			query := tx.Model(&domain.OrderItem{}).Where("order_id = ?", orderID)
+
+			if item.ProductID != nil {
+				query = query.Where("product_id = ?", *item.ProductID)
+			} else if item.GroupID != nil {
+				query = query.Where("group_id = ?", *item.GroupID)
+			} else {
+				// ไม่มี product หรือ group ไม่สามารถ match
+				continue
+			}
+
+			var existing domain.OrderItem
+			err := query.First(&existing).Error
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				continue
+			}
+			if err != nil {
+				return err
+			}
+
+			existing.Quantity = item.Quantity
+			existing.PriceAtPurchase = item.PriceAtPurchase
+
+			if err := tx.Save(&existing).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 }
 
 // GetByUserID implements domain.OrderRepository.

@@ -1,8 +1,6 @@
 package usecases
 
 import (
-	"errors"
-
 	"github.com/vimudakorn/internal/domain"
 )
 
@@ -14,45 +12,23 @@ func NewUserEduLevelUsecase(elRepo domain.UserEduLevelRepository) *UserEduLevelU
 	return &UserEduLevelUsecase{eduLevelRepo: elRepo}
 }
 
-func (el *UserEduLevelUsecase) Create(eduLevel *domain.UserEduLevel) error {
-	return el.eduLevelRepo.Create(eduLevel)
+func (u *UserEduLevelUsecase) CreateWithFixedLevels(userID uint, counts map[string]int) (*domain.UserEduLevel, error) {
+	return u.eduLevelRepo.CreateWithFixedLevels(userID, counts)
 }
 
-func (el *UserEduLevelUsecase) CreateMultiple(levels []domain.UserEduLevel) error {
-	if len(levels) == 0 {
-		return nil
-	}
-	return el.eduLevelRepo.CreateMultiple(levels)
+func (u *UserEduLevelUsecase) UpdateMultipleLevels(userID uint, counts map[string]int) error {
+	return u.eduLevelRepo.UpdateMultipleLevels(userID, counts)
+}
+func (u *UserEduLevelUsecase) GetByUserID(userID uint) (*domain.UserEduLevel, error) {
+	return u.eduLevelRepo.GetByUserID(userID)
 }
 
-func (el *UserEduLevelUsecase) IsEduLevelNameExist(eduLevel string, eduYear int, userID uint) (bool, error) {
-	return el.eduLevelRepo.IsEduLevelNameExist(eduLevel, eduYear, userID)
+// อัปเดตจำนวน นร. ในแต่ละชั้น
+func (u *UserEduLevelUsecase) UpdateStudentCount(userID uint, levelName string, count int) error {
+	return u.eduLevelRepo.UpdateStudentCount(userID, levelName, count)
 }
 
-func (el *UserEduLevelUsecase) IsEduLevelExist(eduLevelID uint) (bool, error) {
-	return el.eduLevelRepo.IsEduLevelExist(eduLevelID)
-}
-
-func (el *UserEduLevelUsecase) UpdateMultiple(userID uint, levels []domain.UserEduLevel) error {
-	if len(levels) == 0 {
-		return errors.New("no education levels to update")
-	}
-
-	for i := range levels {
-		levels[i].UserID = userID
-	}
-
-	return el.eduLevelRepo.UpdateMultiEduLevel(levels)
-}
-
-func (el *UserEduLevelUsecase) UpdateByID(id uint, update *domain.UserEduLevel) error {
-	return el.eduLevelRepo.Update(id, update)
-}
-
-func (el *UserEduLevelUsecase) Delete(userEduLevelID uint) error {
-	return el.eduLevelRepo.Delete(userEduLevelID)
-}
-
-func (el *UserEduLevelUsecase) GetByUserID(userID uint) ([]domain.UserEduLevel, error) {
-	return el.eduLevelRepo.GetByUserID(userID)
+// ลบ UserEduLevel (รวมทั้ง levels ด้วย)
+func (u *UserEduLevelUsecase) DeleteByUserID(userID uint) error {
+	return u.eduLevelRepo.DeleteByUserID(userID)
 }

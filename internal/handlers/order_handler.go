@@ -43,17 +43,25 @@ func (h *OrderHandler) GetByUserID(c *fiber.Ctx) error {
 //		return c.Status(fiber.StatusCreated).JSON(req)
 //	}
 func (h *OrderHandler) Create(c *fiber.Ctx) error {
+	// ดึง user_id จาก context (เช่น JWT)
+	userID, ok := c.Locals("user_id").(uint)
+	if !ok {
+		return fiber.NewError(fiber.StatusUnauthorized, "invalid user_id")
+	}
+
 	var req orderrequest.CreateOrderRequest
 	if err := c.BodyParser(&req); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, "invalid body")
 	}
 
+	// สร้าง order จากข้อมูล request และ user_id จาก context
 	order := domain.Order{
-		UserID:     req.UserID,
+		UserID:     userID,
 		TotalPrice: req.TotalPrice,
 		Status:     req.Status,
 	}
 
+	// เพิ่ม order items
 	for _, item := range req.Items {
 		order.Items = append(order.Items, domain.OrderItem{
 			ProductID:       item.ProductID,
@@ -63,9 +71,11 @@ func (h *OrderHandler) Create(c *fiber.Ctx) error {
 		})
 	}
 
+	// เรียก usecase สร้าง order
 	if err := h.usecases.CreateOrder(&order); err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
+
 	return c.Status(fiber.StatusCreated).JSON(order)
 }
 
@@ -97,17 +107,56 @@ func (h *OrderHandler) GetAll(c *fiber.Ctx) error {
 	})
 }
 
+// func (h *OrderHandler) Update(c *fiber.Ctx) error {
+// 	id, _ := strconv.Atoi(c.Params("id"))
+// 	var req domain.Order
+// 	if err := c.BodyParser(&req); err != nil {
+// 		return fiber.NewError(fiber.StatusBadRequest, "invalid body")
+// 	}
+// 	req.ID = uint(id)
+// 	if err := h.usecases.UpdateOrder(&req); err != nil {
+// 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+// 	}
+// 	return c.JSON(req)
+// }
+
 func (h *OrderHandler) Update(c *fiber.Ctx) error {
 	id, _ := strconv.Atoi(c.Params("id"))
-	var req domain.Order
+
+	var req orderrequest.UpdateOrderRequest
 	if err := c.BodyParser(&req); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, "invalid body")
 	}
-	req.ID = uint(id)
-	if err := h.usecases.UpdateOrder(&req); err != nil {
-		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+
+	// อัปเดตเฉพาะ field ของ order
+	updateData := map[string]interface{}{}
+	if req.Status != "" {
+		updateData["status"] = req.Status
 	}
-	return c.JSON(req)
+	if len(updateData) > 0 {
+		if err := h.usecases.UpdateOrderFields(uint(id), updateData); err != nil {
+			return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+		}
+	}
+
+	// อัปเดต order items ถ้ามี
+	if len(req.Items) > 0 {
+		var items []domain.OrderItem
+		for _, item := range req.Items {
+			items = append(items, domain.OrderItem{
+				ProductID:       item.ProductID,
+				GroupID:         item.GroupID,
+				Quantity:        item.Quantity,
+				PriceAtPurchase: item.Price,
+				OrderID:         uint(id),
+			})
+		}
+		if err := h.usecases.UpdateItemsInOrderID(uint(id), items); err != nil {
+			return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+		}
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "order updated successfully"})
 }
 
 func (h *OrderHandler) Delete(c *fiber.Ctx) error {

@@ -9,75 +9,93 @@ type UserEduLevelGormRepo struct {
 	db *gorm.DB
 }
 
-// GetByUserID implements domain.UserEduLevelRepository.
-func (u *UserEduLevelGormRepo) GetByUserID(userID uint) ([]domain.UserEduLevel, error) {
-	var levels []domain.UserEduLevel
-	err := u.db.Where("user_id = ?", userID).Find(&levels).Error
-	return levels, err
+// Fix ค่า EduLevel ไว้ล่วงหน้า
+var fixedLevels = []string{
+	"อนุบาลศึกษาปีที่ 1",
+	"อนุบาลศึกษาปีที่ 2",
+	"อนุบาลศึกษาปีที่ 3",
+	"ประถมศึกษาปีที่ 1",
+	"ประถมศึกษาปีที่ 2",
+	"ประถมศึกษาปีที่ 3",
+	"ประถมศึกษาปีที่ 4",
+	"ประถมศึกษาปีที่ 5",
+	"ประถมศึกษาปีที่ 6",
+	"มัธยมศึกษาปีที่ 1",
+	"มัธยมศึกษาปีที่ 2",
+	"มัธยมศึกษาปีที่ 3",
+	"มัธยมศึกษาปีที่ 4",
+	"มัธยมศึกษาปีที่ 5",
+	"มัธยมศึกษาปีที่ 6",
 }
 
-// IsEduLevelExist implements domain.UserEduLevelRepository.
-func (u *UserEduLevelGormRepo) IsEduLevelExist(eduLevelID uint) (bool, error) {
-	var count int64
-	err := u.db.Model(&domain.UserEduLevel{}).Where("id = ?", eduLevelID).Count(&count).Error
-	return count > 0, err
-}
+// สร้าง UserEduLevel พร้อม Levels ตาม fixedLevels
+// input map[levelName]studentCount (ถ้าไม่ส่ง จะเป็น 0)
+func (u *UserEduLevelGormRepo) CreateWithFixedLevels(userID uint, counts map[string]int) (*domain.UserEduLevel, error) {
+	edu := domain.UserEduLevel{UserID: userID}
 
-// Delete implements domain.UserEduLevelRepository.
-func (u *UserEduLevelGormRepo) Delete(userEduLevelID uint) error {
-	return u.db.Where("id = ?", userEduLevelID).Delete(&domain.UserEduLevel{}).Error
-}
-
-func (u *UserEduLevelGormRepo) Update(id uint, update *domain.UserEduLevel) error {
-	return u.db.Model(&domain.UserEduLevel{}).
-		Where("id = ?", id).
-		Updates(map[string]interface{}{
-			"edu_level":     update.EduLevel,
-			"student_count": update.StudentCount,
-			"edu_year":      update.EduYear,
-		}).Error
-}
-
-// UpdateMultiEduLevel implements domain.UserEduLevelRepository.
-func (u *UserEduLevelGormRepo) UpdateMultiEduLevel(updates []domain.UserEduLevel) error {
-	return u.db.Transaction(func(tx *gorm.DB) error {
-		for _, level := range updates {
-			if err := tx.Model(&domain.UserEduLevel{}).
-				Where("id = ? AND user_id = ?", level.ID, level.UserID).
-				Updates(map[string]interface{}{
-					"edu_level":     level.EduLevel,
-					"edu_year":      level.EduYear,
-					"student_count": level.StudentCount,
-				}).Error; err != nil {
-				return err
-			}
+	for _, lvl := range fixedLevels {
+		count := 0
+		if val, ok := counts[lvl]; ok {
+			count = val
 		}
-		return nil
-	})
+		edu.Levels = append(edu.Levels, domain.Level{
+			EduLevel:     lvl,
+			StudentCount: count,
+		})
+	}
+
+	err := u.db.Create(&edu).Error
+	return &edu, err
 }
 
-// IsEduLevelExist implements domain.UserEduLevelRepository.
-func (u *UserEduLevelGormRepo) IsEduLevelNameExist(eduLevel string, eduYear int, userID uint) (bool, error) {
-	var count int64
-	err := u.db.Model(&domain.UserEduLevel{}).Where("edu_level = ? AND edu_year = ? AND user_id = ?", eduLevel, eduYear, uint(userID)).Count(&count).Error
-	return count > 0, err
-}
-
-// Create implements domain.UserEduLevelRepository.
-func (u *UserEduLevelGormRepo) Create(eduLevel *domain.UserEduLevel) error {
-	return u.db.Create(eduLevel).Error
-}
-
-func (u *UserEduLevelGormRepo) CreateMultiple(levels []domain.UserEduLevel) error {
-	return u.db.Transaction(func(tx *gorm.DB) error {
-		for _, level := range levels {
-			if err := tx.Create(&level).Error; err != nil {
-				return err
-			}
+// Update หลายระดับพร้อมกัน
+func (u *UserEduLevelGormRepo) UpdateMultipleLevels(userID uint, counts map[string]int) error {
+	for lvl, count := range counts {
+		if err := u.db.Model(&domain.Level{}).
+			Where("edu_level = ? AND user_edu_level_id = (?)",
+				lvl,
+				u.db.Table("user_edu_levels").Select("id").Where("user_id = ?", userID),
+			).
+			Update("student_count", count).Error; err != nil {
+			return err
 		}
-		return nil
-	})
+	}
+	return nil
 }
+
+// ✅ Get UserEduLevel + Levels
+func (u *UserEduLevelGormRepo) GetByUserID(userID uint) (*domain.UserEduLevel, error) {
+	var edu domain.UserEduLevel
+	err := u.db.Preload("Levels").
+		Where("user_id = ?", userID).
+		First(&edu).Error
+	return &edu, err
+}
+
+// ✅ Update จำนวนนักเรียนในแต่ละชั้น
+func (u *UserEduLevelGormRepo) UpdateStudentCount(userID uint, levelName string, count int) error {
+	return u.db.Model(&domain.Level{}).
+		Where("edu_level = ? AND user_edu_level_id = ?", levelName, userID).
+		Update("student_count", count).Error
+}
+
+// DeleteByUserID ลบ UserEduLevel + Levels ของ user
+func (u *UserEduLevelGormRepo) DeleteByUserID(userID uint) error {
+	// ลบ levels ก่อน (foreign key)
+	if err := u.db.Where("user_edu_level_id IN (?)",
+		u.db.Table("user_edu_levels").Select("id").Where("user_id = ?", userID),
+	).Delete(&domain.Level{}).Error; err != nil {
+		return err
+	}
+
+	// ลบ UserEduLevel
+	if err := u.db.Where("user_id = ?", userID).Delete(&domain.UserEduLevel{}).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func NewUserEduLevelGormRepo(db *gorm.DB) domain.UserEduLevelRepository {
 	return &UserEduLevelGormRepo{db: db}
 }
